@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "587058548407",
+    "project_id": "altwally-16812",
+    "storage_bucket": "altwally-16812.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:587058548407:android:1f4b48fe82548da3bdc732",
+        "android_client_info": {
+          "package_name": "com.example.alt__wally"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDvK9QuEIVcV7gindIKtGHbnHSbGIyem0g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
