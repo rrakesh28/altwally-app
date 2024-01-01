@@ -5,12 +5,14 @@ class CustomTextField extends StatelessWidget {
   final String hintText;
   final int maxLines;
   final IconData prefixIcon;
+  final bool? isObscure;
 
   const CustomTextField({
     Key? key,
     required this.controller,
     required this.hintText,
     this.maxLines = 1,
+    this.isObscure,
     required this.prefixIcon,
   }) : super(key: key);
 
@@ -18,6 +20,7 @@ class CustomTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
+      obscureText: isObscure ?? false,
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: const TextStyle(color: Colors.grey),
