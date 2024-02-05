@@ -2,7 +2,7 @@ import 'package:alt__wally/common/toast.dart';
 import 'package:alt__wally/common/widgets/custom_textfield.dart';
 import 'package:alt__wally/constants/global_variables.dart';
 import 'package:alt__wally/core/common/widgets/validation_error_widget.dart';
-import 'package:alt__wally/features/home/pages/home_screen.dart';
+import 'package:alt__wally/features/home/presentation/pages/home_screen.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/credential/credential_cubit.dart';
 import 'package:alt__wally/features/user/presentation/pages/auth/signup_screen.dart';

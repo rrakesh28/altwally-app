@@ -49,6 +49,9 @@ dependencies:
   bloc: ^8.1.2
   equatable: ^2.0.5
   get_it: ^7.6.4
+  cached_network_image: ^3.3.1
+  path_provider: ^2.1.1
+  flutter_cache_manager: ^3.3.1
 
 dev_dependencies:
   flutter_test:

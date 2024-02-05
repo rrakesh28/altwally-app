@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:alt__wally/core/constants/constants.dart';
 import 'package:alt__wally/features/user/data/remote/rest_response.dart';
 import 'package:dio/dio.dart' hide Headers;
@@ -45,23 +47,38 @@ abstract class UserApiService {
   @Headers({
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'Authorization': 'Bearer {jwt}',
   })
-  @GET('/api/user/show')
+  @GET('/api/user/{id}/show')
   Future<HttpResponse<UserDTO>> getUser({
-    @Query("id") int? id,
+    @Path("id") int? userId,
+    @Header('Authorization') String? authorizationHeader,
   });
 
+  // @Headers({
+  //   'Content-Type': 'application/json',
+  //   'Accept': 'application/json',
+  //   'Authorization': 'Bearer {jwt}',
+  // })
+  // @POST('/api/user/update')
+  // Future<HttpResponse<UserDTO>> updateUser({
+  //   @Field("name") String? name,
+  //   @Field("email") String? email,
+  //   @Field("profileUrl") String? profileUrl,
+  //   @Field("password") String? password,
+  // });
+
   @Headers({
-    'Content-Type': 'application/json',
+    'Content-Type': 'multipart/form-data',
     'Accept': 'application/json',
-    'Authorization': 'Bearer {jwt}',
   })
-  @POST('/api/user/update')
-  Future<HttpResponse<UserDTO>> updateUser({
-    @Field("name") String? name,
-    @Field("email") String? email,
-    @Field("profileUrl") String? profileUrl,
-    @Field("password") String? password,
-  });
+  @MultiPart()
+  @POST('/api/wallpaper/store')
+  Future<HttpResponse<UserDTO>> updateUser(
+    @Header('Authorization') String? authorizationHeader,
+    @Part() int? name,
+    @Part() String? email,
+    @Part() File? profileImage,
+    @Part() File? bannerImage,
+    @Part() String? password,
+  );
 }

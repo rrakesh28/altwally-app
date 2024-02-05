@@ -1,7 +1,7 @@
 import 'package:alt__wally/common/toast.dart';
 import 'package:alt__wally/common/widgets/custom_textfield.dart';
 import 'package:alt__wally/core/common/widgets/validation_error_widget.dart';
-import 'package:alt__wally/features/home/pages/home_screen.dart';
+import 'package:alt__wally/features/home/presentation/pages/home_screen.dart';
 import 'package:alt__wally/core/constants/constants.dart';
 import 'package:alt__wally/features/user/domain/entities/user_entity.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_cubit.dart';

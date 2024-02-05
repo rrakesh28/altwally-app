@@ -29,6 +29,7 @@ UserEntity userDtoToUserEntity(UserDTO userDto) {
     createdAt: userDto.user.createdAt,
     updatedAt: userDto.user.updatedAt,
     profileImageUrl: userDto.user.profileImageUrl,
+    bannerImageUrl: userDto.user.bannerImageUrl,
     token: userDto.token,
   );
 }

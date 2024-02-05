@@ -1,3 +1,4 @@
+import 'package:alt__wally/features/wallpaper/data/remote/dto/wallpapers_dto.dart';
 import 'package:equatable/equatable.dart';
 
 class UserEntity extends Equatable {
@@ -10,6 +11,7 @@ class UserEntity extends Equatable {
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final String? profileImageUrl;
+  final String? bannerImageUrl;
   final String? token;
 
   UserEntity({
@@ -22,6 +24,7 @@ class UserEntity extends Equatable {
     this.createdAt,
     this.updatedAt,
     this.profileImageUrl,
+    this.bannerImageUrl,
     this.token,
   });
 
@@ -35,6 +38,7 @@ class UserEntity extends Equatable {
         createdAt,
         updatedAt,
         profileImageUrl,
+        bannerImageUrl,
         token,
       ];
 
@@ -46,12 +50,26 @@ class UserEntity extends Equatable {
       emailVerifiedAt: json['user']['email_verified_at'] != null
           ? DateTime.parse(json['user']['email_verified_at'])
           : null,
-      password: json['user']['password'],
+      password: json['user']['password'] ?? '',
       role: json['user']['role'],
       createdAt: DateTime.parse(json['user']['created_at']),
       updatedAt: DateTime.parse(json['user']['updated_at']),
       profileImageUrl: json['user']['profile_image_url'],
-      token: json['token'],
+      bannerImageUrl: json['user']['banner_image_url'],
+      token: json['token'] ?? '',
+    );
+  }
+
+  factory UserEntity.fromUser(UserDto user) {
+    return UserEntity(
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      emailVerifiedAt: null,
+      role: user.role,
+      profileImageUrl: user.profileImageUrl,
+      bannerImageUrl: user.bannerImageUrl,
+      token: '',
     );
   }
 }

@@ -13,7 +13,7 @@ class _UserApiService implements UserApiService {
     this._dio, {
     this.baseUrl,
   }) {
-    baseUrl ??= 'http://192.168.218.105:8000';
+    baseUrl ??= 'http://192.168.251.105:8000';
   }
 
   final Dio _dio;
@@ -142,14 +142,17 @@ class _UserApiService implements UserApiService {
   }
 
   @override
-  Future<HttpResponse<UserDTO>> getUser({int? id}) async {
+  Future<HttpResponse<UserDTO>> getUser({
+    int? userId,
+    String? authorizationHeader,
+  }) async {
     const _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'id': id};
+    final queryParameters = <String, dynamic>{};
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{
       r'Content-Type': 'application/json',
       r'Accept': 'application/json',
-      r'Authorization': 'Bearer {jwt}',
+      r'Authorization': authorizationHeader,
     };
     _headers.removeWhere((k, v) => v == null);
     final Map<String, dynamic>? _data = null;
@@ -162,7 +165,7 @@ class _UserApiService implements UserApiService {
     )
             .compose(
               _dio.options,
-              '/api/user/show',
+              '/api/user/${userId}/show',
               queryParameters: queryParameters,
               data: _data,
             )
@@ -177,38 +180,68 @@ class _UserApiService implements UserApiService {
   }
 
   @override
-  Future<HttpResponse<UserDTO>> updateUser({
-    String? name,
+  Future<HttpResponse<UserDTO>> updateUser(
+    String? authorizationHeader,
+    int? name,
     String? email,
-    String? profileUrl,
+    File? profileImage,
+    File? bannerImage,
     String? password,
-  }) async {
+  ) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{
-      r'Content-Type': 'application/json',
+      r'Content-Type': 'multipart/form-data',
       r'Accept': 'application/json',
-      r'Authorization': 'Bearer {jwt}',
+      r'Authorization': authorizationHeader,
     };
     _headers.removeWhere((k, v) => v == null);
-    final _data = {
-      'name': name,
-      'email': email,
-      'profileUrl': profileUrl,
-      'password': password,
-    };
-    _data.removeWhere((k, v) => v == null);
+    final _data = FormData();
+    if (name != null) {
+      _data.fields.add(MapEntry(
+        'name',
+        name.toString(),
+      ));
+    }
+    if (email != null) {
+      _data.fields.add(MapEntry(
+        'email',
+        email,
+      ));
+    }
+    _data.files.add(MapEntry(
+      'profileImage',
+      MultipartFile.fromFileSync(
+        profileImage != null ? profileImage.path : '',
+        filename: profileImage != null
+            ? profileImage.path.split(Platform.pathSeparator).last
+            : '',
+      ),
+    ));
+    _data.files.add(MapEntry(
+      'bannerImage',
+      MultipartFile.fromFileSync(
+        bannerImage != null ? bannerImage.path : '',
+        filename: bannerImage != null ? bannerImage.path.split(Platform.pathSeparator).last:'',
+      ),
+    ));
+    if (password != null) {
+      _data.fields.add(MapEntry(
+        'password',
+        password,
+      ));
+    }
     final _result = await _dio.fetch<Map<String, dynamic>>(
         _setStreamType<HttpResponse<UserDTO>>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
-      contentType: 'application/json',
+      contentType: 'multipart/form-data',
     )
             .compose(
               _dio.options,
-              '/api/user/update',
+              '/api/wallpaper/store',
               queryParameters: queryParameters,
               data: _data,
             )

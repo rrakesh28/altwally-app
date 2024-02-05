@@ -1,4 +1,5 @@
 import 'package:alt__wally/core/util/resource.dart';
+import 'package:alt__wally/features/user/data/mapper/user_mapper.dart';
 import 'package:alt__wally/features/user/data/remote/user_api_service.dart';
 import 'package:alt__wally/features/user/domain/entities/user_entity.dart';
 import 'package:alt__wally/features/user/domain/repository/user_repository.dart';
@@ -36,17 +37,17 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<Resource> getSingleUser(UserEntity user) async {
+  Future<Resource> getUserById(int id) async {
     try {
-      int id = await getCurrentUId();
-
-      final httpResponse = await api.getUser(id: id);
-      print(httpResponse.data.user.id);
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setInt("user_id", httpResponse.data.user.id);
-      prefs.setString("token", httpResponse.data.token);
 
-      return Resource.success(data: httpResponse.data);
+      String token = prefs.getString("token")!;
+      String authorizationHeader = 'Bearer $token';
+
+      HttpResponse httpResponse = await api.getUser(
+          userId: id, authorizationHeader: authorizationHeader);
+
+      return Resource.success(data: userDtoToUserEntity(httpResponse.data));
     } catch (e) {
       if (e is DioException) {
         return Resource.failure(

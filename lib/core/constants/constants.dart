@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-const String baseUrl = 'http://192.168.218.105:8000';
+const String baseUrl = 'http://192.168.251.105:8000';
 const String userDefaultImage =
     "https://www.google.com/search?q=default+image&client=firefox-b-d&sxsrf=APq-WBskmtr-ix6NUAqqiHFNpsJX6JSOTg:1650026644151&source=lnms&tbm=isch&sa=X&ved=2ahUKEwjEi_qfjJb3AhXvQd8KHd02BKUQ_AUoAXoECAEQAw#imgrc=A0pMe2lq2NT_jM";
 
