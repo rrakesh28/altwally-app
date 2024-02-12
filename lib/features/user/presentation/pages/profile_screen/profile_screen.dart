@@ -73,18 +73,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 return Container();
               }),
               Positioned(
-                  top: 5,
-                  right: 5,
-                  child: IconButton(
-                      onPressed: () {
-                        print('asdf');
-                      },
-                      icon: const Icon(
-                        Icons.edit,
-                        color: Colors.white,
-                        size: 18,
-                      ))),
-              Positioned(
                   top: 120,
                   left: 0,
                   right: 0,

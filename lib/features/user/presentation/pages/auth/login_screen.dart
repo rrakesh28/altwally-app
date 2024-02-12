@@ -48,156 +48,186 @@ class _LoginScreenState extends State<LoginScreen> {
         },
         builder: (context, credentialState) {
           return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  const SizedBox(
-                    height: 40,
-                  ),
-                  Center(
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      height: 100.0,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Container(
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage(
+                          'assets/images/gradient.png'), // Use your actual asset image path
+                      fit: BoxFit.cover,
                     ),
                   ),
-                  const Text(
-                    "Login to your Account",
-                    style: TextStyle(
-                      fontSize: 40,
-                      color: Color(0xFF5EBC8B),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Container(
-                      height: 3, width: 120, color: const Color(0xFF5EBC8B)),
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Nice to see you again!",
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: GlobalVariables.grayColor,
+                  child: Center(
+                    child: Container(
+                      height: 300.0,
+                      width: 300,
+                      child: Image.asset(
+                        'assets/images/name.png', // Use your actual asset image path
+                        fit: BoxFit.contain,
                       ),
                     ),
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  Form(
-                    key: _signInFormKey,
-                    child: Column(
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        CustomTextField(
-                          prefixIcon: Icons.email,
-                          controller: _emailController,
-                          hintText: 'Email',
-                        ),
-                        if (credentialState is LoginFailed)
-                          ValidationErrorWidget(
-                              state: credentialState, fieldName: 'email'),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        CustomTextField(
-                          prefixIcon: Icons.lock,
-                          controller: _passwordController,
-                          hintText: 'Password',
-                          isObscure: true,
-                        ),
-                        if (credentialState is LoginFailed)
-                          ValidationErrorWidget(
-                              state: credentialState, fieldName: 'password'),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Checkbox(
-                                  value: isChecked,
-                                  onChanged: (bool? newValue) {
-                                    setState(() {
-                                      isChecked =
-                                          newValue!; // Use newValue here
-                                    });
-                                  },
-                                ),
-                                const Text(
-                                  "Remember Me",
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: GlobalVariables.grayColor),
-                                ),
-                              ],
-                            ),
-                            TextButton(
-                              onPressed: () {},
-                              child: const Text('Forgot Password'),
-                            )
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        FilledButton(
-                          onPressed: () {
-                            if (_signInFormKey.currentState!.validate()) {
-                              _signIn();
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size(double.infinity, 50),
+                        const Text(
+                          "Welcome to Alt Wally.",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
                           ),
-                          child: credentialState is LoginLoading
-                              ? const SizedBox(
-                                  height: 30.0,
-                                  width: 30.0,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Text(
-                                  "Sign In",
+                        ),
+                        const Text(
+                          'Find a clean and Minimal Collection which you wont find!!',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.black54,
+                              fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        Form(
+                          key: _signInFormKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Email",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
                                 ),
-                        ),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        const Row(children: <Widget>[
-                          Expanded(child: Divider()),
-                          Text("or continue with"),
-                          Expanded(child: Divider()),
-                        ]),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              'Dont have an account?',
-                              style: TextStyle(
-                                  fontSize: 18,
-                                  color: GlobalVariables.grayColor),
-                            ),
-                            TextButton(
+                              ),
+                              CustomTextField(
+                                controller: _emailController,
+                                hintText: 'Enter your email address',
+                              ),
+                              if (credentialState is LoginFailed)
+                                ValidationErrorWidget(
+                                    state: credentialState, fieldName: 'email'),
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              const Text(
+                                "Password",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              CustomTextField(
+                                controller: _passwordController,
+                                hintText: 'Enter your password',
+                                isObscure: true,
+                              ),
+                              if (credentialState is LoginFailed)
+                                ValidationErrorWidget(
+                                    state: credentialState,
+                                    fieldName: 'password'),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Checkbox(
+                                        value: isChecked,
+                                        onChanged: (bool? newValue) {
+                                          setState(() {
+                                            isChecked =
+                                                newValue!; // Use newValue here
+                                          });
+                                        },
+                                      ),
+                                      const Text(
+                                        "Remember Me",
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            color: GlobalVariables.grayColor),
+                                      ),
+                                    ],
+                                  ),
+                                  TextButton(
+                                    onPressed: () {},
+                                    child: const Text(
+                                      'Forgot Password',
+                                      style: TextStyle(color: Colors.black),
+                                    ),
+                                  )
+                                ],
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              FilledButton(
                                 onPressed: () {
-                                  Navigator.pushNamed(
-                                      context, SignUpScreen.routeName);
+                                  if (_signInFormKey.currentState!.validate()) {
+                                    _signIn();
+                                  }
                                 },
-                                child: const Text('Sing up'))
-                          ],
+                                style: ElevatedButton.styleFrom(
+                                  minimumSize: const Size(double.infinity, 50),
+                                  backgroundColor: Colors.black,
+                                ),
+                                child: credentialState is LoginLoading
+                                    ? const SizedBox(
+                                        height: 30.0,
+                                        width: 30.0,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : const Text(
+                                        "Sign In",
+                                      ),
+                              ),
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              const Row(children: <Widget>[
+                                Expanded(child: Divider()),
+                                Text("or continue with"),
+                                Expanded(child: Divider()),
+                              ]),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    'Dont have an account?',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        color: GlobalVariables.grayColor),
+                                  ),
+                                  TextButton(
+                                      onPressed: () {
+                                        Navigator.pushNamed(
+                                            context, SignUpScreen.routeName);
+                                      },
+                                      child: const Text(
+                                        'Sing up',
+                                        style: TextStyle(color: Colors.black),
+                                      ))
+                                ],
+                              )
+                            ],
+                          ),
                         )
-                      ],
-                    ),
-                  )
-                ],
-              ),
+                      ]),
+                ),
+              ],
             ),
           );
         },

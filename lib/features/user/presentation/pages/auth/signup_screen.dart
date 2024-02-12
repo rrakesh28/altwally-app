@@ -6,7 +6,7 @@ import 'package:alt__wally/core/constants/constants.dart';
 import 'package:alt__wally/features/user/domain/entities/user_entity.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/credential/credential_cubit.dart';
-import 'package:alt__wally/features/user/presentation/pages/auth/login_screen_old.dart';
+import 'package:alt__wally/features/user/presentation/pages/auth/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -86,179 +86,210 @@ class _SignUpScreenState extends State<SignUpScreen> {
         }
       }, builder: (context, credentialState) {
         return SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(15),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                const SizedBox(
-                  height: 40,
-                ),
-                Center(
-                  child: Image.asset(
-                    'assets/images/logo.png',
-                    width: 100.0,
-                    height: 100.0,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Container(
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(
+                        'assets/images/gradient.png'), // Use your actual asset image path
+                    fit: BoxFit.cover,
                   ),
                 ),
-                const Text(
-                  'Sign Up',
-                  style: TextStyle(
-                    color: Color(0xFF5EBC8B),
-                    fontSize: 50,
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w600,
-                    height: 0,
-                    letterSpacing: -0.30,
-                  ),
-                ),
-                Container(
-                  height: 3,
-                  width: 120,
-                  color: const Color(0xFF5EBC8B),
-                ),
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "We are waiting all the time. register now and enjoy a million wallpapers for free ",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: GlobalVariables.grayColor,
+                child: Center(
+                  child: Container(
+                    height: 250.0,
+                    width: 300,
+                    child: Image.asset(
+                      'assets/images/name.png', // Use your actual asset image path
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Form(
-                  key: _signUpFormKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CustomTextField(
-                        prefixIcon: Icons.person,
-                        controller: _nameController,
-                        hintText: 'Name',
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Sign Up",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
                       ),
-                      if (credentialState is RegisterFailed)
-                        ValidationErrorWidget(
-                            state: credentialState, fieldName: 'name'),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      CustomTextField(
-                        prefixIcon: Icons.email,
-                        controller: _emailController,
-                        hintText: 'Email',
-                      ),
-                      if (credentialState is RegisterFailed)
-                        ValidationErrorWidget(
-                            state: credentialState, fieldName: 'email'),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      CustomTextField(
-                        prefixIcon: Icons.lock,
-                        controller: _passwordController,
-                        hintText: 'Password',
-                        isObscure: true,
-                      ),
-                      if (credentialState is RegisterFailed)
-                        ValidationErrorWidget(
-                            state: credentialState, fieldName: 'password'),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      CustomTextField(
-                        prefixIcon: Icons.lock,
-                        controller: _confirmPasswordController,
-                        hintText: 'Confirm Password',
-                        isObscure: true,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    ),
+                    const Text(
+                      'We are waiting all the time. register now and enjoy wallpapers for free',
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Form(
+                      key: _signUpFormKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          const Text(
+                            "Name",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          CustomTextField(
+                            controller: _nameController,
+                            hintText: 'Enter you Name',
+                          ),
+                          if (credentialState is RegisterFailed)
+                            ValidationErrorWidget(
+                                state: credentialState, fieldName: 'name'),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          const Text(
+                            "Email",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          CustomTextField(
+                            controller: _emailController,
+                            hintText: 'Enter you Email',
+                          ),
+                          if (credentialState is RegisterFailed)
+                            ValidationErrorWidget(
+                                state: credentialState, fieldName: 'email'),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          const Text(
+                            "Password",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          CustomTextField(
+                            controller: _passwordController,
+                            hintText: 'Your Password',
+                            isObscure: true,
+                          ),
+                          if (credentialState is RegisterFailed)
+                            ValidationErrorWidget(
+                                state: credentialState, fieldName: 'password'),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          const Text(
+                            "Confirm Password",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          CustomTextField(
+                            controller: _confirmPasswordController,
+                            hintText: 'Confirm Password',
+                            isObscure: true,
+                          ),
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Checkbox(
-                                value: isChecked,
-                                onChanged: (bool? newValue) {
-                                  setState(() {
-                                    isChecked = newValue!;
-                                  });
-                                },
-                              ),
-                              const Text(
-                                "I agree to the terms to use",
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: GlobalVariables.grayColor),
+                              Row(
+                                children: [
+                                  Checkbox(
+                                    value: isChecked,
+                                    onChanged: (bool? newValue) {
+                                      setState(() {
+                                        isChecked = newValue!;
+                                      });
+                                    },
+                                  ),
+                                  const Text(
+                                    "I agree to the terms to use",
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        color: GlobalVariables.grayColor),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      FilledButton(
-                        onPressed: () {
-                          if (_signUpFormKey.currentState!.validate()) {
-                            _signUp();
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 50),
-                        ),
-                        child: credentialState is RegisterLoading
-                            ? const SizedBox(
-                                width: 30.0,
-                                height: 30.0, // Ser a smaller height
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth:
-                                      3.0, // Set the thickness of the circle
-                                ),
-                              )
-                            : const Text(
-                                "Sign Up",
-                              ),
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      const Row(children: <Widget>[
-                        Expanded(child: Divider()),
-                        Text("OR"),
-                        Expanded(child: Divider()),
-                      ]),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'Already have an account?',
-                            style: TextStyle(
-                                fontSize: 18, color: GlobalVariables.grayColor),
+                          const SizedBox(
+                            height: 10,
                           ),
-                          TextButton(
-                              onPressed: () {
-                                Navigator.pushNamed(
-                                    context, LoginScreen.routeName);
-                              },
-                              child: const Text('Log in'))
+                          FilledButton(
+                            onPressed: () {
+                              if (_signUpFormKey.currentState!.validate()) {
+                                _signUp();
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                                minimumSize: const Size(double.infinity, 50),
+                                backgroundColor: Colors.black),
+                            child: credentialState is RegisterLoading
+                                ? const SizedBox(
+                                    width: 30.0,
+                                    height: 30.0, // Ser a smaller height
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth:
+                                          3.0, // Set the thickness of the circle
+                                    ),
+                                  )
+                                : const Text(
+                                    "Sign Up",
+                                  ),
+                          ),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          const Row(children: <Widget>[
+                            Expanded(child: Divider()),
+                            Text("OR"),
+                            Expanded(child: Divider()),
+                          ]),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text(
+                                'Already have an account?',
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    color: GlobalVariables.grayColor),
+                              ),
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.pushNamed(
+                                        context, LoginScreen.routeName);
+                                  },
+                                  child: const Text(
+                                    'Log in',
+                                    style: TextStyle(color: Colors.black),
+                                  ))
+                            ],
+                          )
                         ],
-                      )
-                    ],
-                  ),
-                )
-              ],
-            ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ],
           ),
         );
       }),

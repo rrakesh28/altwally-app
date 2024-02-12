@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:alt__wally/core/util/resource.dart';
 import 'package:alt__wally/features/user/data/mapper/user_mapper.dart';
 import 'package:alt__wally/features/user/data/remote/user_api_service.dart';
@@ -60,7 +62,39 @@ class UserRepositoryImpl implements UserRepository {
 
   @override
   Future<Resource> getUpdateUser(UserEntity user) async {
-    throw UnimplementedError();
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString(
+        "token",
+      );
+
+      String? authorizationHeader = 'Bearer $token';
+      final String name = user.name!;
+      final String email = user.email!;
+      final String password = user.password!;
+      HttpResponse httpResponse =
+          await api.updateUser(authorizationHeader, name, email, password);
+
+      return Resource.success(data: httpResponse.data);
+    } catch (e) {
+      print(e);
+      if (e is DioException) {
+        if (e.response != null && e.response!.statusCode == 422) {
+          final validationErrors = e.response!.data['errors'];
+          return Resource.failure(
+            errorMessage: 'Validation error',
+            validationErrors: validationErrors,
+          );
+        } else {
+          return Resource.failure(
+            errorMessage: 'Error in sign up',
+            dioException: e,
+          );
+        }
+      } else {
+        return Resource.failure(errorMessage: "Something went wrong");
+      }
+    }
   }
 
   @override

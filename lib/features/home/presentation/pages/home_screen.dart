@@ -1,5 +1,5 @@
 import 'package:alt__wally/features/explore/presentation/pages/explore_screen.dart';
-import 'package:alt__wally/features/user/presentation/pages/profile_scree/profile_screen.dart';
+import 'package:alt__wally/features/user/presentation/pages/profile_screen/profile_screen.dart';
 import 'package:alt__wally/features/wallpaper/presentation/pages/favourites_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
@@ -24,15 +24,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   static const List<Widget> _screens = <Widget>[
     ExploreScreen(),
-    ProfileScreen(),
+    // ProfileScreen(),
     FavouriteWallpapersScreen(),
     ProfileScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
-    Brightness currentBrightness = MediaQuery.of(context).platformBrightness;
-    bool isDarkMode = currentBrightness == Brightness.dark;
+    // Brightness currentBrightness = MediaQuery.of(context).platformBrightness;
+    // bool isDarkMode = currentBrightness == Brightness.dark;
 
     return Scaffold(
       body: _screens.elementAt(_selectedIndex),
@@ -40,19 +40,15 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 20.0),
         child: GNav(
           gap: 8,
-          color: isDarkMode ? Colors.white : Colors.black,
-          activeColor: Colors.black,
-          tabBackgroundColor: const Color(0xFFF2AB38),
+          color: Colors.black,
+          activeColor: Colors.white,
+          tabBackgroundColor: Colors.black,
           padding: const EdgeInsets.all(10),
           // ignore: prefer_const_literals_to_create_immutables
           tabs: [
             const GButton(
               icon: Icons.explore,
               text: "Explore",
-            ),
-            const GButton(
-              icon: Icons.people,
-              text: "Community",
             ),
             const GButton(
               icon: Icons.favorite,

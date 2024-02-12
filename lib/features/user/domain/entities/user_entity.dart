@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:alt__wally/features/wallpaper/data/remote/dto/wallpapers_dto.dart';
 import 'package:equatable/equatable.dart';
 
@@ -10,7 +12,9 @@ class UserEntity extends Equatable {
   final String? password;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final File? profileImage;
   final String? profileImageUrl;
+  final File? bannerImage;
   final String? bannerImageUrl;
   final String? token;
 
@@ -23,7 +27,9 @@ class UserEntity extends Equatable {
     this.password,
     this.createdAt,
     this.updatedAt,
+    this.profileImage,
     this.profileImageUrl,
+    this.bannerImage,
     this.bannerImageUrl,
     this.token,
   });

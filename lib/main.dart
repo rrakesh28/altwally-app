@@ -6,6 +6,7 @@ import 'package:alt__wally/features/user/presentation/cubit/auth/auth_cubit.dart
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_state.dart';
 import 'package:alt__wally/features/user/presentation/cubit/credential/credential_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/profile/profile_cubit.dart';
+import 'package:alt__wally/features/user/presentation/cubit/update/update_user_cubit.dart';
 import 'package:alt__wally/features/user/presentation/pages/auth/login_screen.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/add_wallpaper/add_wallpaper_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/get_favourite/get_favourite_wallpapers_cubit.dart';
@@ -47,6 +48,9 @@ class MyApp extends StatelessWidget {
         BlocProvider<ProfileCubit>(
           create: (_) => di.sl<ProfileCubit>(),
         ),
+        BlocProvider<UpdateUserCubit>(
+          create: (_) => di.sl<UpdateUserCubit>(),
+        ),
         BlocProvider<WallOfTheMonthCubit>(
           create: (_) => di.sl<WallOfTheMonthCubit>(),
         ),
@@ -68,11 +72,11 @@ class MyApp extends StatelessWidget {
               colorScheme: lightDynamic,
               useMaterial3: true,
             ),
-            darkTheme: ThemeData(
-              colorScheme: darkDynamic,
-              brightness: Brightness.dark,
-              useMaterial3: true,
-            ),
+            // darkTheme: ThemeData(
+            //   colorScheme: darkDynamic,
+            //   brightness: Brightness.dark,
+            //   useMaterial3: true,
+            // ),
             debugShowCheckedModeBanner: false,
             initialRoute: '/',
             onGenerateRoute: (settings) => generateRoute(settings),

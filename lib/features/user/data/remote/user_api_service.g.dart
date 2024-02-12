@@ -13,7 +13,7 @@ class _UserApiService implements UserApiService {
     this._dio, {
     this.baseUrl,
   }) {
-    baseUrl ??= 'http://192.168.251.105:8000';
+    baseUrl ??= 'http://192.168.202.105:8000';
   }
 
   final Dio _dio;
@@ -182,10 +182,8 @@ class _UserApiService implements UserApiService {
   @override
   Future<HttpResponse<UserDTO>> updateUser(
     String? authorizationHeader,
-    int? name,
-    String? email,
-    File? profileImage,
-    File? bannerImage,
+    String name,
+    String email,
     String? password,
   ) async {
     const _extra = <String, dynamic>{};
@@ -198,33 +196,13 @@ class _UserApiService implements UserApiService {
     };
     _headers.removeWhere((k, v) => v == null);
     final _data = FormData();
-    if (name != null) {
-      _data.fields.add(MapEntry(
-        'name',
-        name.toString(),
-      ));
-    }
-    if (email != null) {
-      _data.fields.add(MapEntry(
-        'email',
-        email,
-      ));
-    }
-    _data.files.add(MapEntry(
-      'profileImage',
-      MultipartFile.fromFileSync(
-        profileImage != null ? profileImage.path : '',
-        filename: profileImage != null
-            ? profileImage.path.split(Platform.pathSeparator).last
-            : '',
-      ),
+    _data.fields.add(MapEntry(
+      'name',
+      name,
     ));
-    _data.files.add(MapEntry(
-      'bannerImage',
-      MultipartFile.fromFileSync(
-        bannerImage != null ? bannerImage.path : '',
-        filename: bannerImage != null ? bannerImage.path.split(Platform.pathSeparator).last:'',
-      ),
+    _data.fields.add(MapEntry(
+      'email',
+      email,
     ));
     if (password != null) {
       _data.fields.add(MapEntry(
@@ -241,7 +219,7 @@ class _UserApiService implements UserApiService {
     )
             .compose(
               _dio.options,
-              '/api/wallpaper/store',
+              '/api/user/update',
               queryParameters: queryParameters,
               data: _data,
             )

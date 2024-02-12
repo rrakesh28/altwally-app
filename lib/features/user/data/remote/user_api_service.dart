@@ -54,31 +54,16 @@ abstract class UserApiService {
     @Header('Authorization') String? authorizationHeader,
   });
 
-  // @Headers({
-  //   'Content-Type': 'application/json',
-  //   'Accept': 'application/json',
-  //   'Authorization': 'Bearer {jwt}',
-  // })
-  // @POST('/api/user/update')
-  // Future<HttpResponse<UserDTO>> updateUser({
-  //   @Field("name") String? name,
-  //   @Field("email") String? email,
-  //   @Field("profileUrl") String? profileUrl,
-  //   @Field("password") String? password,
-  // });
-
   @Headers({
     'Content-Type': 'multipart/form-data',
     'Accept': 'application/json',
   })
   @MultiPart()
-  @POST('/api/wallpaper/store')
+  @POST('/api/user/update')
   Future<HttpResponse<UserDTO>> updateUser(
     @Header('Authorization') String? authorizationHeader,
-    @Part() int? name,
-    @Part() String? email,
-    @Part() File? profileImage,
-    @Part() File? bannerImage,
+    @Part() String name,
+    @Part() String email,
     @Part() String? password,
   );
 }

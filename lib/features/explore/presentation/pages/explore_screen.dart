@@ -6,8 +6,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:alt__wally/features/explore/presentation/cubit/category/category_cubit.dart';
-import 'package:alt__wally/features/user/presentation/cubit/auth/auth_cubit.dart';
-import 'package:alt__wally/features/user/presentation/cubit/auth/auth_state.dart';
 
 class ExploreScreen extends StatefulWidget {
   static const String routeName = '/explore-screen';
@@ -31,8 +29,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   @override
   Widget build(BuildContext context) {
-    String greeting = getGreeting();
-
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -43,70 +39,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Image.asset(
-                          'assets/images/name.png',
-                          height: 25,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Row(children: [
-                      Row(
-                        children: [
-                          BlocBuilder<AuthCubit, AuthState>(
-                            builder: (context, state) {
-                              if (state is Authenticated) {
-                                return Image.network(
-                                  state.user.profileImageUrl!,
-                                  width: 50,
-                                  height: 50,
-                                );
-                              }
-                              return Container();
-                            },
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Text(
-                                '$greeting!',
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              BlocBuilder<AuthCubit, AuthState>(
-                                builder: (context, state) {
-                                  if (state is Authenticated) {
-                                    return Text(
-                                      state.user.name!,
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    );
-                                  }
-                                  return const Text("Guest",
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w700,
-                                      ));
-                                },
-                              ),
-                            ],
-                          )
-                        ],
+                    Center(
+                      child: Image.asset(
+                        'assets/images/name.png',
+                        height: 25,
                       ),
-                      const Spacer(),
-                      IconButton(
-                          onPressed: () {},
-                          icon: const Icon(Icons.notifications)),
-                    ]),
+                    ),
                     const SizedBox(height: 20),
                     const Text(
                       "Wall of the month",

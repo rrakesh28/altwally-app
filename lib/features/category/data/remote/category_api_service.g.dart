@@ -13,7 +13,7 @@ class _CategoryApiService implements CategoryApiService {
     this._dio, {
     this.baseUrl,
   }) {
-    baseUrl ??= 'http://192.168.251.105:8000';
+    baseUrl ??= 'http://192.168.202.105:8000';
   }
 
   final Dio _dio;
