@@ -1,30 +1,32 @@
 import 'package:alt__wally/features/category/domain/entities/category_entity.dart';
-import 'package:alt__wally/features/category/presentation/cubit/wallpapers/wallpapers_cubit.dart';
-import 'package:alt__wally/features/category/presentation/cubit/wallpapers/wallpapers_state.dart';
-import 'package:alt__wally/features/category/presentation/pages/category_wallpapers_details_screen.dart';
 import 'package:alt__wally/features/wallpaper/domain/entities/wallpaper_entity.dart';
+import 'package:alt__wally/features/wallpaper/presentation/cubit/get_category_wallpapers/get_category_wallpapers_cubit.dart';
+import 'package:alt__wally/features/wallpaper/presentation/cubit/get_category_wallpapers/get_category_wallpapers_state.dart';
+import 'package:alt__wally/features/wallpaper/presentation/cubit/get_favourite/get_favourite_wallpapers_cubit.dart';
+import 'package:alt__wally/features/wallpaper/presentation/cubit/get_favourite/get_favourite_wallpapers_state.dart';
+import 'package:alt__wally/features/wallpaper/presentation/pages/category_wallpapers_details_screen.dart';
+import 'package:alt__wally/features/wallpaper/presentation/pages/favourites_details_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class CategoryWallpapersListScreen extends StatefulWidget {
-  static const String routeName = "/category-wallpapers-list-screen";
-
+class CategoryWallpapersScreen extends StatefulWidget {
+  static const String routeName = "/category-wallpapers-screen";
   final CategoryEntity category;
 
-  const CategoryWallpapersListScreen({super.key, required this.category});
+  const CategoryWallpapersScreen({super.key, required this.category});
 
   @override
-  State<CategoryWallpapersListScreen> createState() =>
-      _CategoryWallpapersListScreenState();
+  State<CategoryWallpapersScreen> createState() =>
+      _CategoryWallpapersScreenState();
 }
 
-class _CategoryWallpapersListScreenState
-    extends State<CategoryWallpapersListScreen> {
+class _CategoryWallpapersScreenState extends State<CategoryWallpapersScreen> {
   @override
   void initState() {
     super.initState();
-    BlocProvider.of<WallpapersCubit>(context).fetchData(widget.category.id);
+    BlocProvider.of<GetCategoryWallpapersCubit>(context)
+        .fetchData(widget.category.id!);
   }
 
   @override
@@ -32,7 +34,7 @@ class _CategoryWallpapersListScreenState
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.category.name ?? ''),
+          title: Text(widget.category.name!),
           centerTitle: true,
         ),
         body: Container(
@@ -50,13 +52,14 @@ class _CategoryWallpapersListScreenState
                 child: Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 10, vertical: 10),
-                    child: BlocConsumer<WallpapersCubit, WallPapersState>(
+                    child: BlocConsumer<GetCategoryWallpapersCubit,
+                            GetWallpapersState>(
                         listener: (context, state) {},
                         builder: (context, state) {
-                          if (state is WallpapersInitial) {
+                          if (state is Initial) {
                             return const Center(
                                 child: CircularProgressIndicator());
-                          } else if (state is WallpapersLoaded) {
+                          } else if (state is Loaded) {
                             return GridView.builder(
                               gridDelegate:
                                   const SliverGridDelegateWithFixedCrossAxisCount(
@@ -75,7 +78,7 @@ class _CategoryWallpapersListScreenState
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) =>
-                                            CategoryWallpapersDetailsScreen(
+                                            CategoryWallpapersDetailScreen(
                                                 category: widget.category,
                                                 index: index),
                                       ),

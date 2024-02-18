@@ -1,7 +1,3 @@
-import 'package:alt__wally/features/category/domain/entities/category_entity.dart';
-import 'package:alt__wally/features/category/presentation/cubit/wallpapers/wallpapers_cubit.dart';
-import 'package:alt__wally/features/category/presentation/cubit/wallpapers/wallpapers_state.dart';
-import 'package:alt__wally/features/category/presentation/pages/category_wallpapers_details_screen.dart';
 import 'package:alt__wally/features/wallpaper/domain/entities/wallpaper_entity.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/get_favourite/get_favourite_wallpapers_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/get_favourite/get_favourite_wallpapers_state.dart';
@@ -70,6 +66,7 @@ class _FavouriteWallpapersScreenState extends State<FavouriteWallpapersScreen> {
                               itemBuilder: (context, index) {
                                 WallpaperEntity wallpaper =
                                     state.wallpapers[index]!;
+                                print(wallpaper.imageUrl);
                                 return GestureDetector(
                                   onTap: () {
                                     Navigator.push(

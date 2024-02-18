@@ -120,7 +120,7 @@ class _MyWidgetState extends State<ProfileWallpapersScreen> {
           return const Center(child: CircularProgressIndicator());
         } else if (state is ProfileLoaded) {
           return WallpaperCarousel(
-              title: state.wallpapers[_current]!.category!.name!,
+              title: 'Profile',
               index: widget.index,
               wallpapers: state.wallpapers);
         } else if (state is ProfileLoadingFailed) {

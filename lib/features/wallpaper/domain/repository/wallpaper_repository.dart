@@ -4,7 +4,10 @@ import 'package:alt__wally/features/wallpaper/domain/entities/wallpaper_entity.d
 abstract class WallpaperRepository {
   Future<Resource> addWallpaper(WallpaperEntity wallpaper);
   Future<Resource> getWallpapersByUserId(userId);
+  Future<Resource> getWallpapersByCategory(categoryId);
   Future<Resource> getWallOfTheMonth();
   Future<Resource> getFavouriteWallpapers();
   Future<Resource> toggleFavouriteWallpaper(WallpaperEntity wallpaper);
+  Future<Resource> getRecentlyAddedWallpapers();
+  Future<Resource> getPopularWallpapers();
 }

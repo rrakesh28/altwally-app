@@ -1,178 +1,113 @@
-import 'dart:io';
-
 import 'package:alt__wally/core/util/resource.dart';
-import 'package:alt__wally/features/user/data/mapper/user_mapper.dart';
-import 'package:alt__wally/features/user/data/remote/user_api_service.dart';
+import 'package:alt__wally/features/user/data/model/user_model.dart';
 import 'package:alt__wally/features/user/domain/entities/user_entity.dart';
 import 'package:alt__wally/features/user/domain/repository/user_repository.dart';
-import 'package:dio/dio.dart';
-import 'package:retrofit/retrofit.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class UserRepositoryImpl implements UserRepository {
-  final UserApiService api;
+  final FirebaseFirestore fireStore;
+  final FirebaseAuth auth;
 
-  UserRepositoryImpl({required this.api});
+  UserRepositoryImpl({required this.fireStore, required this.auth});
 
   @override
   Future<Resource> forgotPassword(String email) async {
     try {
-      // HttpResponse httpResponse = await api.forgotPassword(email: email);
-      HttpResponse httpResponse = await api.forgotPassword(email: email);
-      return Resource.success(data: httpResponse.data);
+      await auth.sendPasswordResetEmail(email: email);
+      return Resource.success(data: '');
     } catch (e) {
-      if (e is DioException) {
-        return Resource.failure(
-            errorMessage: 'Error in sending reset link', dioException: e);
-      } else {
-        return Resource.failure(errorMessage: 'An unexpected error occurred');
-      }
+      return Resource.failure(errorMessage: "Something went wrong");
     }
   }
 
   @override
-  Future<int> getCurrentUId() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    int value = prefs.getInt("user_id")!;
-    return value;
+  Future<String> getCurrentUId() async {
+    return auth.currentUser!.uid;
   }
 
   @override
-  Future<Resource> getUserById(int id) async {
+  Future<Resource> getUserById(String uid) async {
     try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
+      final userCollection = fireStore.collection("users");
 
-      String token = prefs.getString("token")!;
-      String authorizationHeader = 'Bearer $token';
+      final UserEntity? user = await userCollection
+          .limit(1)
+          .where("uid", isEqualTo: uid)
+          .get()
+          .then((QuerySnapshot<Map<String, dynamic>> querySnapshot) {
+        if (querySnapshot.docs.isNotEmpty) {
+          return UserEntity.fromUserModel(
+            UserModel.fromSnapshot(querySnapshot.docs.first),
+          );
+        } else {
+          return null;
+        }
+      });
 
-      HttpResponse httpResponse = await api.getUser(
-          userId: id, authorizationHeader: authorizationHeader);
-
-      return Resource.success(data: userDtoToUserEntity(httpResponse.data));
+      return Resource.success(data: user);
     } catch (e) {
-      if (e is DioException) {
-        return Resource.failure(
-            errorMessage: 'Error in getting user', dioException: e);
-      } else {
-        return Resource.failure(errorMessage: 'Something went wrong');
-      }
+      return Resource.failure(errorMessage: "Something went wrong");
     }
   }
 
   @override
   Future<Resource> getUpdateUser(UserEntity user) async {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? token = prefs.getString(
-        "token",
-      );
-
-      String? authorizationHeader = 'Bearer $token';
-      final String name = user.name!;
-      final String email = user.email!;
-      final String password = user.password!;
-      HttpResponse httpResponse =
-          await api.updateUser(authorizationHeader, name, email, password);
-
-      return Resource.success(data: httpResponse.data);
-    } catch (e) {
-      print(e);
-      if (e is DioException) {
-        if (e.response != null && e.response!.statusCode == 422) {
-          final validationErrors = e.response!.data['errors'];
-          return Resource.failure(
-            errorMessage: 'Validation error',
-            validationErrors: validationErrors,
-          );
-        } else {
-          return Resource.failure(
-            errorMessage: 'Error in sign up',
-            dioException: e,
-          );
-        }
-      } else {
-        return Resource.failure(errorMessage: "Something went wrong");
-      }
-    }
+    throw UnimplementedError();
   }
 
   @override
   Future<bool> isSignIn() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    int? userId = prefs.getInt("user_id");
-    return userId != null;
+    return auth.currentUser?.uid != null;
   }
 
   @override
   Future<Resource> signIn(UserEntity user) async {
     try {
-      HttpResponse httpResponse =
-          await api.login(email: user.email, password: user.password);
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setInt("user_id", httpResponse.data.user.id);
-      prefs.setString("token", httpResponse.data.token);
-      return Resource.success(data: httpResponse.data);
+      await auth.signInWithEmailAndPassword(
+          email: user.email!, password: user.password!);
+      return Resource.success(data: '');
     } catch (e) {
-      if (e is DioException) {
-        if (e.response != null && e.response!.statusCode == 422) {
-          final validationErrors = e.response!.data['errors'];
-          return Resource.failure(
-            errorMessage: 'Validation error',
-            validationErrors: validationErrors,
-          );
-        } else if (e.response != null && e.response!.statusCode == 401) {
-          return Resource.failure(
-            errorMessage: e.response!.data['message'],
-            dioException: e,
-          );
-        } else {
-          return Resource.failure(
-            errorMessage: 'Error in sign up',
-            dioException: e,
-          );
-        }
-      } else {
-        return Resource.failure(errorMessage: "Something went wrong");
-      }
+      return Resource.failure(errorMessage: 'Something Went wrong');
     }
   }
 
   @override
-  Future<void> signOut() {
-    // TODO: implement signOut
-    throw UnimplementedError();
+  Future<void> signOut() async {
+    await auth.signOut();
   }
 
   @override
   Future<Resource> signUp(UserEntity user) async {
     try {
-      HttpResponse httpResponse = await api.register(
-          name: user.name, email: user.email, password: user.password);
+      var authResult = await auth.createUserWithEmailAndPassword(
+          email: user.email!, password: user.password!);
 
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setInt("user_id", httpResponse.data.user.id);
-      prefs.setString("token", httpResponse.data.token);
+      var uid = authResult.user!.uid;
 
-      return Resource.success(data: httpResponse.data);
-    } catch (e) {
-      if (e is DioException) {
-        if (e.response != null && e.response!.statusCode == 422) {
-          final validationErrors = e.response!.data['errors'];
-          return Resource.failure(
-            errorMessage: 'Validation error',
-            validationErrors: validationErrors,
-          );
-        } else {
-          return Resource.failure(
-            errorMessage: 'Error in sign up',
-            dioException: e,
-          );
-        }
+      final CollectionReference userCollection = fireStore.collection('users');
+
+      var userDoc = await userCollection.doc(uid).get();
+
+      if (!userDoc.exists) {
+        var newUser = UserModel(
+                email: user.email!,
+                uid: uid,
+                name: user.name!,
+                createdAt: Timestamp.fromDate(DateTime.now()),
+                updatedAt: Timestamp.fromDate(DateTime.now()),
+                profileImageUrl:
+                    "https://res.cloudinary.com/dklkwu5fw/image/upload/v1707755056/profile_images/lkidtk25byxho4aljtvc.jpg",
+                bannerImageUrl:
+                    "https://res.cloudinary.com/dklkwu5fw/image/upload/v1707755095/banner_images/f9j4mav0zlqrj51u9bg5.jpg")
+            .toDocument();
+        await userCollection.doc(uid).set(newUser);
+        return Resource.success(data: '');
       } else {
-        return Resource.failure(errorMessage: "Something went wrong");
+        return Resource.failure(errorMessage: "Email Id Already Exists");
       }
+    } catch (e) {
+      return Resource.failure(errorMessage: "Something went wrong");
     }
   }
 }

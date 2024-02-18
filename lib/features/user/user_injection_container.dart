@@ -1,4 +1,3 @@
-import 'package:alt__wally/features/user/data/remote/user_api_service.dart';
 import 'package:alt__wally/features/user/data/repository/user_repository_impl.dart';
 import 'package:alt__wally/features/user/domain/repository/user_repository.dart';
 import 'package:alt__wally/features/user/domain/usecases/forgot_password_usecase.dart';
@@ -54,10 +53,5 @@ Future<void> userInjectionContainer() async {
 
   //Repository
   sl.registerLazySingleton<UserRepository>(
-      () => UserRepositoryImpl(api: sl.call()));
-
-  //Remote DataSource
-
-  //API
-  sl.registerLazySingleton<UserApiService>(() => UserApiService(sl.call()));
+      () => UserRepositoryImpl(auth: sl.call(), fireStore: sl.call()));
 }

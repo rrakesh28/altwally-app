@@ -2,8 +2,9 @@ import 'dart:io';
 
 import 'package:alt__wally/common/toast.dart';
 import 'package:alt__wally/core/common/widgets/validation_error_widget.dart';
+import 'package:alt__wally/features/app/presentation/pages/app_screen.dart';
 import 'package:alt__wally/features/category/domain/entities/category_entity.dart';
-import 'package:alt__wally/features/explore/presentation/cubit/category/category_cubit.dart';
+import 'package:alt__wally/features/category/presentation/cubit/get_categories_cubit/category_cubit.dart';
 import 'package:alt__wally/features/home/presentation/pages/home_screen.dart';
 import 'package:alt__wally/features/wallpaper/domain/entities/wallpaper_entity.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/add_wallpaper/add_wallpaper_cubit.dart';
@@ -99,7 +100,7 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
       validateInput();
 
       WallpaperEntity wallpaper = WallpaperEntity(
-        categoryId: int.tryParse(_category) ?? 0,
+        categoryId: _category,
         title: _nameController.text,
         image: file,
         size: _fileSize,
@@ -162,7 +163,7 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => HomeScreen(index: 3),
+              builder: (context) => AppScreen(index: 3),
             ),
           );
         }

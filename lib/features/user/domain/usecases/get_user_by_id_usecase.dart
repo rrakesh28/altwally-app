@@ -6,7 +6,7 @@ class GetUserByIdUseCase {
 
   GetUserByIdUseCase({required this.repository});
 
-  Future<Resource> call(int id) {
+  Future<Resource> call(String id) {
     return repository.getUserById(id);
   }
 }

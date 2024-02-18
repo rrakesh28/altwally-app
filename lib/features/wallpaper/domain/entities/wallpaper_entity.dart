@@ -2,13 +2,13 @@ import 'dart:io';
 
 import 'package:alt__wally/features/category/domain/entities/category_entity.dart';
 import 'package:alt__wally/features/user/domain/entities/user_entity.dart';
-import 'package:alt__wally/features/wallpaper/data/remote/dto/wallpapers_dto.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
 class WallpaperEntity extends Equatable {
-  final int? id;
-  final int? userId;
-  final int? categoryId;
+  final String? id;
+  final String? userId;
+  final String? categoryId;
   final String? title;
   final File? image;
   final String? imageUrl;
@@ -17,6 +17,9 @@ class WallpaperEntity extends Equatable {
   final int? height;
   final int? width;
   bool? favourite;
+  final bool? wallOfTheMonth;
+  final Timestamp? createdAt;
+  final Timestamp? updatedAt;
   final UserEntity? user;
   final CategoryEntity? category;
 
@@ -29,9 +32,12 @@ class WallpaperEntity extends Equatable {
     this.imageUrl,
     this.size,
     this.color,
+    this.wallOfTheMonth,
     this.height,
     this.width,
     this.favourite,
+    this.createdAt,
+    this.updatedAt,
     this.user,
     this.category,
   });
@@ -46,28 +52,11 @@ class WallpaperEntity extends Equatable {
         imageUrl,
         size,
         color,
+        wallOfTheMonth,
         height,
         width,
         favourite,
         user,
         category,
       ];
-
-  factory WallpaperEntity.fromWallpaper(WallpaperDataDto wallpaper) {
-    return WallpaperEntity(
-      id: wallpaper.id,
-      userId: wallpaper.userId,
-      categoryId: wallpaper.categoryId,
-      title: wallpaper.title,
-      imageUrl: wallpaper.imageUrl,
-      size: wallpaper.size,
-      color: '',
-      height: wallpaper.height,
-      width: wallpaper.width,
-      favourite: wallpaper.favourite,
-      user: UserEntity.fromUser(
-          wallpaper.user), // Assuming you have a fromUser method in UserEntity
-      category: CategoryEntity.fromCategory(wallpaper.category),
-    );
-  }
 }

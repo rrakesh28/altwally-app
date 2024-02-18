@@ -11,7 +11,7 @@ class AuthInitial extends AuthState {
 }
 
 class Authenticated extends AuthState {
-  final int uid;
+  final String uid;
   final UserEntity user;
 
   const Authenticated({required this.uid, required this.user});

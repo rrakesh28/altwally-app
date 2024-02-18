@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:alt__wally/common/toast.dart';
+import 'package:alt__wally/features/app/presentation/pages/app_screen.dart';
 import 'package:alt__wally/features/home/presentation/pages/home_screen.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_state.dart';
@@ -33,6 +34,7 @@ class _WallpaperCarouselState extends State<WallpaperCarousel> {
   @override
   void initState() {
     super.initState();
+    _current = widget.index;
   }
 
   List<Widget> generateImageTitles(context) {
@@ -197,7 +199,7 @@ class _WallpaperCarouselState extends State<WallpaperCarousel> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const HomeScreen(index: 3),
+                        builder: (context) => const AppScreen(index: 3),
                       ),
                     );
                   },
@@ -255,104 +257,75 @@ class _WallpaperCarouselState extends State<WallpaperCarousel> {
           const SizedBox(
             height: 20,
           ),
-          // Padding(
-          //   padding: EdgeInsets.all(20),
-          //   child: Container(
-          //     padding: EdgeInsets.all(10),
-          //     decoration: BoxDecoration(
-          //       color: Color(0xFFEBEBEC).withOpacity(0.3),
-          //       borderRadius: BorderRadius.circular(10),
-          //       border: Border.all(
-          //         color: Colors.black.withOpacity(0.3),
-          //         width: 1.0,
-          //       ),
-          //     ),
-          //     child: Row(
-          //       children: [
-          //         Expanded(
-          //           child: Column(
-          //             crossAxisAlignment: CrossAxisAlignment.start,
-          //             children: [
-          //               Text(
-          //                 'Creator Name',
-          //                 style: TextStyle(
-          //                   fontSize: 9,
-          //                   color: Colors.black,
-          //                   fontWeight: FontWeight.w600,
-          //                 ),
-          //               ),
-          //               Text(
-          //                 widget.wallpapers[_current]?.user?.name ??
-          //                     'Unknown User',
-          //                 style: TextStyle(
-          //                   fontSize: 9,
-          //                   color: Color(0xFFFF9E00),
-          //                   fontWeight: FontWeight.bold,
-          //                 ),
-          //               ),
-          //             ],
-          //           ),
-          //         ),
-          //         VerticalDivider(
-          //           color: Colors.black,
-          //           width: 2,
-          //           thickness: 10,
-          //         ),
-          //         Expanded(
-          //           child: Column(
-          //             crossAxisAlignment: CrossAxisAlignment.start,
-          //             children: [
-          //               Text(
-          //                 'Wallpaper Name',
-          //                 style: TextStyle(
-          //                   fontSize: 9,
-          //                   color: Colors.black,
-          //                   fontWeight: FontWeight.w600,
-          //                 ),
-          //               ),
-          //               Text(
-          //                 widget.wallpapers[_current]?.title ?? 'Unknown User',
-          //                 style: TextStyle(
-          //                   fontSize: 9,
-          //                   color: Color(0xFFFF9E00),
-          //                   fontWeight: FontWeight.bold,
-          //                 ),
-          //               ),
-          //             ],
-          //           ),
-          //         ),
-          //         VerticalDivider(
-          //           color: Colors.black.withOpacity(0.3),
-          //           width: 2,
-          //           thickness: 1,
-          //         ),
-          //         Expanded(
-          //           child: Column(
-          //             crossAxisAlignment: CrossAxisAlignment.start,
-          //             children: [
-          //               Text(
-          //                 'Wally Size',
-          //                 style: TextStyle(
-          //                   fontSize: 9,
-          //                   color: Colors.black,
-          //                   fontWeight: FontWeight.w600,
-          //                 ),
-          //               ),
-          //               Text(
-          //                 "${widget.wallpapers[_current]?.size} MB",
-          //                 style: TextStyle(
-          //                   fontSize: 9,
-          //                   color: Color(0xFFFF9E00),
-          //                   fontWeight: FontWeight.bold,
-          //                 ),
-          //               ),
-          //             ],
-          //           ),
-          //         ),
-          //       ],
-          //     ),
-          //   ),
-          // ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Color(0xFFD9D9D9).withOpacity(0.4),
+                borderRadius: BorderRadius.circular(50),
+              ),
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        widget.wallpapers[_current]?.favourite ?? false
+                            ? const Icon(
+                                Icons.favorite,
+                                color:
+                                    Colors.red, // Customize the color if needed
+                              )
+                            : const Icon(
+                                Icons.favorite_outline,
+                              ),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          '1.5k',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        )
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.visibility_outlined),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          '1.5k',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        )
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.downloading_outlined),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          '1.5k',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        )
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ]),
       ),
     );

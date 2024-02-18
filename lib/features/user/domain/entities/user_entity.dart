@@ -1,25 +1,26 @@
 import 'dart:io';
 
-import 'package:alt__wally/features/wallpaper/data/remote/dto/wallpapers_dto.dart';
+import 'package:alt__wally/features/user/data/model/user_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
 class UserEntity extends Equatable {
-  final int? id;
+  final String? uid;
   final String? name;
   final String? email;
   final DateTime? emailVerifiedAt;
   final String? role;
   final String? password;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
+  final Timestamp? createdAt;
+  final Timestamp? updatedAt;
   final File? profileImage;
-  final String? profileImageUrl;
   final File? bannerImage;
+  final String? profileImageUrl;
   final String? bannerImageUrl;
   final String? token;
 
-  UserEntity({
-    this.id,
+  const UserEntity({
+    this.uid,
     this.name,
     this.email,
     this.emailVerifiedAt,
@@ -28,15 +29,32 @@ class UserEntity extends Equatable {
     this.createdAt,
     this.updatedAt,
     this.profileImage,
-    this.profileImageUrl,
     this.bannerImage,
+    this.profileImageUrl,
     this.bannerImageUrl,
     this.token,
   });
 
+  factory UserEntity.fromUserModel(UserModel userModel) {
+    return UserEntity(
+      uid: userModel.uid,
+      name: userModel.name,
+      email: userModel.email,
+      emailVerifiedAt: userModel.emailVerifiedAt,
+      role: userModel.role,
+      createdAt: userModel.createdAt,
+      updatedAt: userModel.updatedAt,
+      profileImage: userModel.profileImage,
+      bannerImage: userModel.bannerImage,
+      profileImageUrl: userModel.profileImageUrl,
+      bannerImageUrl: userModel.bannerImageUrl,
+      token: userModel.token,
+    );
+  }
+
   @override
   List<Object?> get props => [
-        id,
+        uid,
         name,
         email,
         emailVerifiedAt,
@@ -47,35 +65,4 @@ class UserEntity extends Equatable {
         bannerImageUrl,
         token,
       ];
-
-  factory UserEntity.fromJson(Map<String, dynamic> json) {
-    return UserEntity(
-      id: json['user']['id'],
-      name: json['user']['name'],
-      email: json['user']['email'],
-      emailVerifiedAt: json['user']['email_verified_at'] != null
-          ? DateTime.parse(json['user']['email_verified_at'])
-          : null,
-      password: json['user']['password'] ?? '',
-      role: json['user']['role'],
-      createdAt: DateTime.parse(json['user']['created_at']),
-      updatedAt: DateTime.parse(json['user']['updated_at']),
-      profileImageUrl: json['user']['profile_image_url'],
-      bannerImageUrl: json['user']['banner_image_url'],
-      token: json['token'] ?? '',
-    );
-  }
-
-  factory UserEntity.fromUser(UserDto user) {
-    return UserEntity(
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      emailVerifiedAt: null,
-      role: user.role,
-      profileImageUrl: user.profileImageUrl,
-      bannerImageUrl: user.bannerImageUrl,
-      token: '',
-    );
-  }
 }

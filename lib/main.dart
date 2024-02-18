@@ -1,6 +1,5 @@
-import 'package:alt__wally/features/category/presentation/cubit/wallpapers/wallpapers_cubit.dart';
-import 'package:alt__wally/features/explore/presentation/cubit/category/category_cubit.dart';
-import 'package:alt__wally/features/home/presentation/pages/home_screen.dart';
+import 'package:alt__wally/features/app/presentation/pages/app_screen.dart';
+import 'package:alt__wally/features/category/presentation/cubit/get_categories_cubit/category_cubit.dart';
 import 'package:alt__wally/features/splash/pages/splash_screen.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_state.dart';
@@ -9,10 +8,14 @@ import 'package:alt__wally/features/user/presentation/cubit/profile/profile_cubi
 import 'package:alt__wally/features/user/presentation/cubit/update/update_user_cubit.dart';
 import 'package:alt__wally/features/user/presentation/pages/auth/login_screen.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/add_wallpaper/add_wallpaper_cubit.dart';
+import 'package:alt__wally/features/wallpaper/presentation/cubit/get_category_wallpapers/get_category_wallpapers_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/get_favourite/get_favourite_wallpapers_cubit.dart';
+import 'package:alt__wally/features/wallpaper/presentation/cubit/recently_added/recently_added_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/toggle_favourite/toggle_favourite_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/wall_of_the_month/wall_of_the_month_cubit.dart';
+import 'package:alt__wally/firebase_options.dart';
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -22,6 +25,9 @@ import 'router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   await di.init();
   runApp(const MyApp());
 }
@@ -54,14 +60,17 @@ class MyApp extends StatelessWidget {
         BlocProvider<WallOfTheMonthCubit>(
           create: (_) => di.sl<WallOfTheMonthCubit>(),
         ),
-        BlocProvider<WallpapersCubit>(
-          create: (_) => di.sl<WallpapersCubit>(),
-        ),
         BlocProvider<ToggleFavouriteWallpaperCubit>(
           create: (_) => di.sl<ToggleFavouriteWallpaperCubit>(),
         ),
         BlocProvider<GetFavouriteWallpapersCubit>(
           create: (_) => di.sl<GetFavouriteWallpapersCubit>(),
+        ),
+        BlocProvider<GetCategoryWallpapersCubit>(
+          create: (_) => di.sl<GetCategoryWallpapersCubit>(),
+        ),
+        BlocProvider<GetRecentlyAddedWallpapersCubit>(
+          create: (_) => di.sl<GetRecentlyAddedWallpapersCubit>(),
         ),
       ],
       child: DynamicColorBuilder(
@@ -86,7 +95,7 @@ class MyApp extends StatelessWidget {
                 return BlocBuilder<AuthCubit, AuthState>(
                   builder: (context, authState) {
                     if (authState is Authenticated) {
-                      return const HomeScreen();
+                      return const AppScreen();
                     } else if (authState is AuthInitial) {
                       return const SplashScreen();
                     } else {

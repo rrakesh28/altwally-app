@@ -1,14 +1,8 @@
 import 'package:alt__wally/core/common/widgets/wallpaper_carousel.dart';
-import 'package:alt__wally/features/category/domain/entities/category_entity.dart';
-import 'package:alt__wally/features/category/presentation/cubit/wallpapers/wallpapers_cubit.dart';
-import 'package:alt__wally/features/category/presentation/cubit/wallpapers/wallpapers_state.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/get_favourite/get_favourite_wallpapers_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/get_favourite/get_favourite_wallpapers_state.dart';
-import 'package:alt__wally/features/wallpaper/presentation/cubit/wall_of_the_month/wall_of_the_month_cubit.dart';
-import 'package:alt__wally/features/wallpaper/presentation/cubit/wall_of_the_month/wall_of_the_month_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 
 class FavouriteWallpapersDetailsScreen extends StatefulWidget {
   static const String routeName = '/favourite-wallapers-details-screen';
@@ -39,7 +33,7 @@ class _FavouriteWallpapersDetailsScreenState
               title: "Favourites",
               index: widget.index,
               wallpapers: state.wallpapers);
-        } else if (state is WallpapersLoadingFailed) {
+        } else if (state is GetFavouriteWallpapersFailed) {
           return Text('Failed to load wallpapers');
         } else {
           return Container();

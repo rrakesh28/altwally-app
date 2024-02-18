@@ -8,6 +8,6 @@ abstract class UserRepository {
   Future<Resource> signUp(UserEntity user);
   Future<void> signOut();
   Future<Resource> getUpdateUser(UserEntity user);
-  Future<int> getCurrentUId();
-  Future<Resource> getUserById(int id);
+  Future<String> getCurrentUId();
+  Future<Resource> getUserById(String uid);
 }

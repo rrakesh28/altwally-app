@@ -1,25 +1,25 @@
 import 'package:alt__wally/features/wallpaper/domain/entities/wallpaper_entity.dart';
 import 'package:equatable/equatable.dart';
 
-abstract class WallPapersState extends Equatable {
-  const WallPapersState();
+abstract class GetPopularWallpapersState extends Equatable {
+  const GetPopularWallpapersState();
 }
 
-class WallpapersInitial extends WallPapersState {
+class PopularInitial extends GetPopularWallpapersState {
   @override
   List<Object> get props => [];
 }
 
-class WallpapersLoaded extends WallPapersState {
+class PopularLoaded extends GetPopularWallpapersState {
   final List<WallpaperEntity?> wallpapers;
 
-  const WallpapersLoaded({required this.wallpapers});
+  const PopularLoaded({required this.wallpapers});
 
   @override
   List<Object> get props => [wallpapers];
 }
 
-class WallpapersLoadingFailed extends WallPapersState {
+class PopularFailed extends GetPopularWallpapersState {
   @override
   List<Object> get props => [];
 }

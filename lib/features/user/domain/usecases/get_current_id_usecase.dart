@@ -5,7 +5,7 @@ class GetCurrentUIDUseCase {
 
   GetCurrentUIDUseCase({required this.repository});
 
-  Future<int> call() {
+  Future<String> call() {
     return repository.getCurrentUId();
   }
 }
