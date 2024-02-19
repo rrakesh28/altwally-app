@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
 class AppScreen extends StatefulWidget {
-  static const String routeNamte = '/app-screen';
+  static const String routeName = '/app-screen';
   final int? index;
   const AppScreen({super.key, this.index});
 

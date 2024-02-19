@@ -2,6 +2,7 @@
 
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_state.dart';
+import 'package:alt__wally/features/user/presentation/pages/auth/login_screen.dart';
 import 'package:alt__wally/features/user/presentation/pages/profile_screen/update_profile_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -365,7 +366,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         MaterialStateProperty.all<Color>(Colors.black),
                   ),
                   onPressed: () {
-                    // Add your logout logic here
+                    BlocProvider.of<AuthCubit>(context).loggedOut();
+                    Navigator.pushNamed(context, LoginScreen.routeName);
                   },
                   child: const Text(
                     'Logout',

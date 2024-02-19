@@ -1,12 +1,13 @@
 import 'package:alt__wally/common/toast.dart';
 import 'package:alt__wally/common/widgets/custom_textfield.dart';
 import 'package:alt__wally/core/common/widgets/validation_error_widget.dart';
-import 'package:alt__wally/features/home/presentation/pages/home_screen.dart';
+import 'package:alt__wally/features/app/presentation/pages/app_screen.dart';
 import 'package:alt__wally/core/constants/constants.dart';
 import 'package:alt__wally/features/user/domain/entities/user_entity.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/credential/credential_cubit.dart';
 import 'package:alt__wally/features/user/presentation/pages/auth/login_screen.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -39,6 +40,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   void _signUp() {
+    if (!isChecked) {
+      showToast(message: 'Please check the terms of use');
+      return;
+    }
+
     if (_nameController.text.isEmpty) {
       showToast(message: 'enter your name');
       return;
@@ -79,13 +85,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
           showToast(message: "Sing Up Successful!!");
           BlocProvider.of<AuthCubit>(context).loggedIn();
           Navigator.pushNamedAndRemoveUntil(
-              context, HomeScreen.routeName, (route) => false);
+              context, AppScreen.routeName, (route) => false);
         }
         if (credentialState is RegisterFailed) {
           showToast(message: credentialState.errorMessage);
         }
       }, builder: (context, credentialState) {
         return SingleChildScrollView(
+          reverse: true,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.max,
@@ -216,11 +223,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       });
                                     },
                                   ),
-                                  const Text(
-                                    "I agree to the terms to use",
-                                    style: TextStyle(
-                                        fontSize: 12,
-                                        color: GlobalVariables.grayColor),
+                                  Text.rich(
+                                    TextSpan(
+                                      text: 'I agree to the ',
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          color: GlobalVariables.grayColor),
+                                      children: <TextSpan>[
+                                        TextSpan(
+                                          text: 'terms',
+                                          style: const TextStyle(
+                                            decoration:
+                                                TextDecoration.underline,
+                                            color: Colors.deepOrange,
+                                          ),
+                                          recognizer: TapGestureRecognizer()
+                                            ..onTap = () {
+                                              print('Terms clicked!');
+                                            },
+                                        ),
+                                        const TextSpan(
+                                          text: ' to use',
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),

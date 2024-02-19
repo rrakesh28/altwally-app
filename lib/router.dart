@@ -1,3 +1,4 @@
+import 'package:alt__wally/features/app/presentation/pages/app_screen.dart';
 import 'package:alt__wally/features/home/presentation/pages/home_screen.dart';
 import 'package:alt__wally/features/settings/presentation/pages/settings_screen.dart';
 import 'package:alt__wally/features/user/presentation/pages/auth/login_screen.dart';
@@ -12,6 +13,11 @@ Route<dynamic> generateRoute(RouteSettings routeSettings) {
       return MaterialPageRoute(
         settings: routeSettings,
         builder: (_) => LoginScreen(),
+      );
+    case AppScreen.routeName:
+      return MaterialPageRoute(
+        settings: routeSettings,
+        builder: (_) => AppScreen(),
       );
     case SignUpScreen.routeName:
       return MaterialPageRoute(

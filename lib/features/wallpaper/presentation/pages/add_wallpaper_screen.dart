@@ -5,7 +5,6 @@ import 'package:alt__wally/core/common/widgets/validation_error_widget.dart';
 import 'package:alt__wally/features/app/presentation/pages/app_screen.dart';
 import 'package:alt__wally/features/category/domain/entities/category_entity.dart';
 import 'package:alt__wally/features/category/presentation/cubit/get_categories_cubit/category_cubit.dart';
-import 'package:alt__wally/features/home/presentation/pages/home_screen.dart';
 import 'package:alt__wally/features/wallpaper/domain/entities/wallpaper_entity.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/add_wallpaper/add_wallpaper_cubit.dart';
 import 'package:file_picker/file_picker.dart';
@@ -13,6 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:async';
+
+import 'package:image_cropper/image_cropper.dart';
 
 class AddWallpaperScreen extends StatefulWidget {
   static const String routeName = '/add-wallpaper-screen';
@@ -80,6 +81,7 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
         setState(() {
           file = File(result.files.single.path!);
         });
+        _cropImage();
       }
     } catch (e) {
       showToast(message: 'Error $e');
@@ -109,13 +111,6 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
       );
 
       BlocProvider.of<AddWallpaperCubit>(context).submit(wallpaper);
-
-      // Navigator.push(
-      //   context,
-      //   MaterialPageRoute(
-      //     builder: (context) => const HomeScreen(index: 3),
-      //   ),
-      // );
     } catch (e) {
       showToast(message: "Error: $e");
     }
@@ -147,6 +142,31 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
     }
   }
 
+  Future<void> _cropImage() async {
+    CroppedFile? croppedFile = await ImageCropper().cropImage(
+      sourcePath: file!.path,
+      aspectRatioPresets: [CropAspectRatioPreset.ratio16x9],
+      uiSettings: [
+        AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: Colors.black,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false),
+        IOSUiSettings(
+          title: 'Cropper',
+        ),
+      ],
+    );
+
+    if (croppedFile != null) {
+      File? convertedFile = File(croppedFile.path);
+      setState(() {
+        file = convertedFile;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -163,7 +183,7 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => AppScreen(index: 3),
+              builder: (context) => const AppScreen(index: 3),
             ),
           );
         }
@@ -172,6 +192,7 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
         }
       }, builder: (context, state) {
         return SingleChildScrollView(
+          reverse: true,
           child: Padding(
             padding: const EdgeInsets.only(left: 16.0, right: 16.0),
             child: Column(
@@ -268,7 +289,7 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
                 ),
                 TextField(
                   controller: _nameController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: 'Stars in the moon',
                   ),
                 ),
@@ -308,22 +329,22 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
                     Expanded(
                       child: TextField(
                         controller: _heightController,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           hintText: '1200',
                         ),
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 10,
                     ),
-                    Text('X'),
-                    SizedBox(
+                    const Text('X'),
+                    const SizedBox(
                       width: 10,
                     ),
                     Expanded(
                       child: TextField(
                         controller: _widthController,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           hintText: '800',
                         ),
                       ),
@@ -337,25 +358,26 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
                 const SizedBox(
                   height: 20,
                 ),
-                Center(
-                  child: _uploading ? CircularProgressIndicator() : Container(),
-                ),
-                Center(
-                  child: FilledButton(
-                    onPressed: () {
-                      submit(context);
-                    },
-                    style: ButtonStyle(
-                      backgroundColor:
-                          MaterialStateProperty.resolveWith<Color?>(
-                        (Set<MaterialState> states) {
-                          return const Color(0xFF5EBC8B);
-                        },
-                      ),
-                    ),
-                    child: const Text('Upload'),
+                FilledButton(
+                  onPressed: () {
+                    submit(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 50),
+                    backgroundColor: Colors.black,
                   ),
-                )
+                  child: state is AddWallpaperLoading
+                      ? const SizedBox(
+                          height: 30.0,
+                          width: 30.0,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          "Upload",
+                        ),
+                ),
               ],
             ),
           ),

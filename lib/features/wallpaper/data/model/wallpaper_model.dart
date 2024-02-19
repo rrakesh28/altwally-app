@@ -4,7 +4,6 @@ import 'package:alt__wally/features/category/data/model/category_model.dart';
 import 'package:alt__wally/features/user/data/model/user_model.dart';
 import 'package:alt__wally/features/wallpaper/domain/entities/wallpaper_entity.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:floor/floor.dart';
 
 class WallpaperModel extends WallpaperEntity {
   final UserModel? user;
@@ -24,6 +23,9 @@ class WallpaperModel extends WallpaperEntity {
     Timestamp? createdAt,
     Timestamp? updatedAt,
     bool? favourite,
+    int? likes,
+    int? views,
+    int? downloads,
     this.user,
     this.category,
   }) : super(
@@ -36,6 +38,9 @@ class WallpaperModel extends WallpaperEntity {
             wallOfTheMonth: wallOfTheMonth,
             height: height,
             width: width,
+            likes: likes,
+            downloads: downloads,
+            views: views,
             createdAt: createdAt,
             updatedAt: updatedAt,
             favourite: favourite);

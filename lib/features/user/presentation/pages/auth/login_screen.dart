@@ -2,7 +2,7 @@ import 'package:alt__wally/common/toast.dart';
 import 'package:alt__wally/common/widgets/custom_textfield.dart';
 import 'package:alt__wally/constants/global_variables.dart';
 import 'package:alt__wally/core/common/widgets/validation_error_widget.dart';
-import 'package:alt__wally/features/home/presentation/pages/home_screen.dart';
+import 'package:alt__wally/features/app/presentation/pages/app_screen.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/credential/credential_cubit.dart';
 import 'package:alt__wally/features/user/presentation/pages/auth/signup_screen.dart';
@@ -40,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
             showToast(message: "Login Successful!!");
             BlocProvider.of<AuthCubit>(context).loggedIn();
             Navigator.pushNamedAndRemoveUntil(
-                context, HomeScreen.routeName, (route) => false);
+                context, AppScreen.routeName, (route) => false);
           }
           if (credentialState is LoginFailed) {
             showToast(message: credentialState.errorMessage);
@@ -48,6 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
         },
         builder: (context, credentialState) {
           return SingleChildScrollView(
+            reverse: true,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.max,
@@ -56,8 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Container(
                   decoration: const BoxDecoration(
                     image: DecorationImage(
-                      image: AssetImage(
-                          'assets/images/gradient.png'), // Use your actual asset image path
+                      image: AssetImage('assets/images/gradient.png'),
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -66,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       height: 300.0,
                       width: 300,
                       child: Image.asset(
-                        'assets/images/name.png', // Use your actual asset image path
+                        'assets/images/name.png',
                         fit: BoxFit.contain,
                       ),
                     ),

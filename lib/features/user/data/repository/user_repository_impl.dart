@@ -17,6 +17,7 @@ class UserRepositoryImpl implements UserRepository {
       await auth.sendPasswordResetEmail(email: email);
       return Resource.success(data: '');
     } catch (e) {
+      print(e);
       return Resource.failure(errorMessage: "Something went wrong");
     }
   }
@@ -53,7 +54,31 @@ class UserRepositoryImpl implements UserRepository {
 
   @override
   Future<Resource> getUpdateUser(UserEntity user) async {
-    throw UnimplementedError();
+    try {
+      final CollectionReference userCollection = fireStore.collection('users');
+      var userDoc = await userCollection.doc(user.uid).get();
+
+      if (userDoc.exists) {
+        if (user.email != null && user.email!.isNotEmpty) {
+          await auth.currentUser!.verifyBeforeUpdateEmail(user.email!);
+        }
+
+        if (user.password != null && user.password!.isNotEmpty) {
+          await auth.currentUser!.updatePassword(user.password!);
+        }
+        await userCollection.doc(user.uid).update({
+          'name': user.name,
+          'updatedAt': Timestamp.fromDate(DateTime.now()),
+          'email': user.email,
+        });
+
+        return Resource.success(data: '');
+      } else {
+        return Resource.failure(errorMessage: "User not found");
+      }
+    } catch (e) {
+      return Resource.failure(errorMessage: "Something went wrong");
+    }
   }
 
   @override
@@ -64,11 +89,22 @@ class UserRepositoryImpl implements UserRepository {
   @override
   Future<Resource> signIn(UserEntity user) async {
     try {
-      await auth.signInWithEmailAndPassword(
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: user.email!, password: user.password!);
-      return Resource.success(data: '');
+
+      User? firebaseUser = FirebaseAuth.instance.currentUser;
+
+      if (firebaseUser != null) {
+        return Resource.success(data: '');
+      } else {
+        return Resource.failure(errorMessage: 'Credentials not found.');
+      }
     } catch (e) {
-      return Resource.failure(errorMessage: 'Something Went wrong');
+      if (e is FirebaseAuthException) {
+        return Resource.failure(errorMessage: 'Credentials not found.');
+      } else {
+        return Resource.failure(errorMessage: 'Something went wrong');
+      }
     }
   }
 
@@ -107,7 +143,15 @@ class UserRepositoryImpl implements UserRepository {
         return Resource.failure(errorMessage: "Email Id Already Exists");
       }
     } catch (e) {
-      return Resource.failure(errorMessage: "Something went wrong");
+      if (e is FirebaseAuthException) {
+        if (e.code == 'email-already-in-use') {
+          return Resource.failure(errorMessage: "Email Id Already Exists");
+        } else {
+          return Resource.failure(errorMessage: "Something went wrong");
+        }
+      } else {
+        return Resource.failure(errorMessage: "Something went wrong");
+      }
     }
   }
 }

@@ -13,6 +13,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_cropper/image_cropper.dart';
 
 class UpdateProfileScreen extends StatefulWidget {
   static const String routeName = '/update-profile-screen';
@@ -53,6 +54,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
         setState(() {
           bannerImage = File(result.files.single.path!);
         });
+        _cropBannerImage();
       }
     } catch (e) {
       showToast(message: 'Error $e');
@@ -66,6 +68,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
         setState(() {
           profileImage = File(result.files.single.path!);
         });
+        _cropProfileImage();
       }
     } catch (e) {
       showToast(message: 'Error $e');
@@ -81,9 +84,61 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       name: _nameController.text,
       email: _emailController.text,
       password: _passwordController.text,
+      bannerImage: bannerImage,
+      profileImage: profileImage,
     );
 
     BlocProvider.of<UpdateUserCubit>(context).updateUser(user);
+  }
+
+  Future<void> _cropBannerImage() async {
+    CroppedFile? croppedFile = await ImageCropper().cropImage(
+      sourcePath: bannerImage!.path,
+      aspectRatioPresets: [CropAspectRatioPreset.ratio16x9],
+      uiSettings: [
+        AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: Colors.black,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false),
+        IOSUiSettings(
+          title: 'Cropper',
+        ),
+      ],
+    );
+
+    if (croppedFile != null) {
+      File? convertedFile = File(croppedFile.path);
+      setState(() {
+        bannerImage = convertedFile;
+      });
+    }
+  }
+
+  Future<void> _cropProfileImage() async {
+    CroppedFile? croppedFile = await ImageCropper().cropImage(
+      sourcePath: profileImage!.path,
+      aspectRatioPresets: [CropAspectRatioPreset.square],
+      uiSettings: [
+        AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: Colors.black,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false),
+        IOSUiSettings(
+          title: 'Cropper',
+        ),
+      ],
+    );
+
+    if (croppedFile != null) {
+      File? convertedFile = File(croppedFile.path);
+      setState(() {
+        profileImage = convertedFile;
+      });
+    }
   }
 
   @override

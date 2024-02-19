@@ -1,8 +1,9 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:alt__wally/core/util/resource.dart';
 import 'package:alt__wally/features/category/data/model/category_model.dart';
-import 'package:alt__wally/features/wallpaper/data/model/wallpaper_mode.dart';
+import 'package:alt__wally/features/wallpaper/data/model/wallpaper_model.dart';
 import 'package:alt__wally/features/wallpaper/domain/entities/wallpaper_entity.dart';
 import 'package:alt__wally/features/wallpaper/domain/repository/wallpaper_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -37,17 +38,20 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
         final jsonMap = jsonDecode(responseString);
 
         final newWallpapers = WallpaperModel(
-          id: wallpaperId,
-          userId: auth.currentUser!.uid,
-          categoryId: wallpaper.categoryId,
-          title: wallpaper.title,
-          imageUrl: jsonMap['secure_url'],
-          size: wallpaper.size,
-          height: wallpaper.height,
-          width: wallpaper.width,
-          createdAt: Timestamp.fromDate(DateTime.now()),
-          updatedAt: Timestamp.fromDate(DateTime.now()),
-        ).toDocument();
+                id: wallpaperId,
+                userId: auth.currentUser!.uid,
+                categoryId: wallpaper.categoryId,
+                title: wallpaper.title,
+                imageUrl: jsonMap['secure_url'],
+                size: wallpaper.size,
+                height: wallpaper.height,
+                width: wallpaper.width,
+                createdAt: Timestamp.fromDate(DateTime.now()),
+                updatedAt: Timestamp.fromDate(DateTime.now()),
+                likes: 0,
+                views: 0,
+                downloads: 0)
+            .toDocument();
 
         await wallpapersCollection.doc(wallpaperId).set(newWallpapers);
 
@@ -78,8 +82,14 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
               (doc.data() as Map<String, dynamic>)['wallpaper_id'] as String)
           .toList();
 
-      for (var document in querySnapshot.docs) {
-        var wallpaperData = document.data();
+      List<DocumentSnapshot> shuffledDocs = querySnapshot.docs.toList()
+        ..shuffle();
+
+      int numUpdates = min(shuffledDocs.length, 5);
+
+      for (var i = 0; i < numUpdates; i++) {
+        var document = shuffledDocs[i];
+        var wallpaperData = document.data() as Map<String, dynamic>;
 
         var wallpaper = WallpaperModel(
           id: document.id,
@@ -90,7 +100,20 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
           size: wallpaperData['size'],
           height: wallpaperData['height'],
           width: wallpaperData['width'],
+          likes: wallpaperData['likes'],
+          downloads: wallpaperData['downloads'],
+          views: wallpaperData['views'],
         );
+
+        await wallpapersCollection
+            .doc(document.id)
+            .update({'views': wallpaperData['views'] ?? 0 + 1});
+        await wallpapersCollection
+            .doc(document.id)
+            .update({'likes': wallpaperData['likes'] ?? 0 + 1});
+        await wallpapersCollection
+            .doc(document.id)
+            .update({'downloads': wallpaperData['downloads'] ?? 0 + 1});
 
         wallpaper.favourite = favoriteWallpaperIds.contains(wallpaper.id);
 
@@ -98,6 +121,7 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
       }
       return Resource.success(data: wallpapers);
     } catch (e) {
+      print(e);
       return Resource.failure(errorMessage: "Something went wrong");
     }
   }
@@ -121,8 +145,17 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
               (doc.data() as Map<String, dynamic>)['wallpaper_id'] as String)
           .toList();
 
-      for (var document in querySnapshot.docs) {
-        var wallpaperData = document.data();
+      // Shuffle the documents
+      List<DocumentSnapshot> shuffledDocs = querySnapshot.docs.toList()
+        ..shuffle();
+
+      // Choose how many documents you want to update (e.g., 5 random documents)
+      int numUpdates = min(shuffledDocs.length,
+          5); // Update 5 random documents or less if there are fewer documents
+
+      for (var i = 0; i < numUpdates; i++) {
+        var document = shuffledDocs[i];
+        var wallpaperData = document.data() as Map<String, dynamic>;
 
         var wallpaper = WallpaperModel(
           id: document.id,
@@ -134,6 +167,17 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
           height: wallpaperData['height'],
           width: wallpaperData['width'],
         );
+
+        // Update likes, views, and downloads counts
+        await wallpapersCollection
+            .doc(document.id)
+            .update({'views': wallpaperData['views'] + 1});
+        await wallpapersCollection
+            .doc(document.id)
+            .update({'likes': wallpaperData['likes'] + 1});
+        await wallpapersCollection
+            .doc(document.id)
+            .update({'downloads': wallpaperData['downloads'] + 1});
 
         wallpaper.favourite = favoriteWallpaperIds.contains(wallpaper.id);
 
@@ -216,6 +260,16 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
 
       List<WallpaperModel> wallpapers = [];
 
+      QuerySnapshot favoritesSnapshot = await firestore
+          .collection('user_favourites')
+          .where('user_id', isEqualTo: auth.currentUser!.uid)
+          .get();
+
+      List<String> favoriteWallpaperIds = favoritesSnapshot.docs
+          .map((doc) =>
+              (doc.data() as Map<String, dynamic>)['wallpaper_id'] as String)
+          .toList();
+
       for (var document in querySnapshot.docs) {
         var wallpaperData = document.data();
 
@@ -229,6 +283,19 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
           height: wallpaperData['height'],
           width: wallpaperData['width'],
         );
+
+        // Update likes, views, and downloads counts
+        await wallpapersCollection
+            .doc(document.id)
+            .update({'views': wallpaperData['views'] + 1});
+        await wallpapersCollection
+            .doc(document.id)
+            .update({'likes': wallpaperData['likes'] + 1});
+        await wallpapersCollection
+            .doc(document.id)
+            .update({'downloads': wallpaperData['downloads'] + 1});
+
+        wallpaper.favourite = favoriteWallpaperIds.contains(wallpaper.id);
 
         wallpapers.add(wallpaper);
       }
@@ -259,6 +326,7 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
               (doc.data() as Map<String, dynamic>)['wallpaper_id'] as String)
           .toList();
 
+      // Iterate through the documents
       for (var document in querySnapshot.docs) {
         var wallpaperData = document.data();
 
@@ -282,6 +350,17 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
           height: wallpaperData['height'],
           width: wallpaperData['width'],
         );
+
+        // Update likes, views, and downloads counts
+        await wallpapersCollection
+            .doc(document.id)
+            .update({'views': wallpaperData['views'] + 1});
+        await wallpapersCollection
+            .doc(document.id)
+            .update({'likes': wallpaperData['likes'] + 1});
+        await wallpapersCollection
+            .doc(document.id)
+            .update({'downloads': wallpaperData['downloads'] + 1});
 
         wallpaper.favourite = favoriteWallpaperIds.contains(wallpaper.id);
 
@@ -299,8 +378,11 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
       final wallpapersCollection = firestore.collection("wallpapers");
       final querySnapshot = await wallpapersCollection
           .orderBy('created_at', descending: true)
-          .get()
-          .shuffle();
+          .get();
+
+      List<DocumentSnapshot> documents = querySnapshot.docs.toList();
+      documents.shuffle();
+
       List<WallpaperModel> wallpapers = [];
 
       QuerySnapshot favoritesSnapshot = await firestore
@@ -313,8 +395,9 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
               (doc.data() as Map<String, dynamic>)['wallpaper_id'] as String)
           .toList();
 
-      for (var document in querySnapshot.docs) {
-        var wallpaperData = document.data();
+      // Iterate through the shuffled documents
+      for (var document in documents) {
+        var wallpaperData = document.data() as Map<String, dynamic>;
 
         var categorySnapshot = await firestore
             .collection("categories")
@@ -336,6 +419,17 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
           height: wallpaperData['height'],
           width: wallpaperData['width'],
         );
+
+        // Update likes, views, and downloads counts
+        await wallpapersCollection
+            .doc(document.id)
+            .update({'views': wallpaperData['views'] + 1});
+        await wallpapersCollection
+            .doc(document.id)
+            .update({'likes': wallpaperData['likes'] + 1});
+        await wallpapersCollection
+            .doc(document.id)
+            .update({'downloads': wallpaperData['downloads'] + 1});
 
         wallpaper.favourite = favoriteWallpaperIds.contains(wallpaper.id);
 

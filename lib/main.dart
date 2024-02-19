@@ -4,12 +4,14 @@ import 'package:alt__wally/features/splash/pages/splash_screen.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_state.dart';
 import 'package:alt__wally/features/user/presentation/cubit/credential/credential_cubit.dart';
+import 'package:alt__wally/features/user/presentation/cubit/forgot_password/forgot_password_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/profile/profile_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/update/update_user_cubit.dart';
 import 'package:alt__wally/features/user/presentation/pages/auth/login_screen.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/add_wallpaper/add_wallpaper_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/get_category_wallpapers/get_category_wallpapers_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/get_favourite/get_favourite_wallpapers_cubit.dart';
+import 'package:alt__wally/features/wallpaper/presentation/cubit/popular_wallpapers/popular_wallpapers_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/recently_added/recently_added_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/toggle_favourite/toggle_favourite_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/wall_of_the_month/wall_of_the_month_cubit.dart';
@@ -18,6 +20,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'injection_container.dart' as di;
 
@@ -72,6 +75,12 @@ class MyApp extends StatelessWidget {
         BlocProvider<GetRecentlyAddedWallpapersCubit>(
           create: (_) => di.sl<GetRecentlyAddedWallpapersCubit>(),
         ),
+        BlocProvider<GetPopularWallpapersCubit>(
+          create: (_) => di.sl<GetPopularWallpapersCubit>(),
+        ),
+        BlocProvider<ForgotPasswordCubit>(
+          create: (_) => di.sl<ForgotPasswordCubit>(),
+        ),
       ],
       child: DynamicColorBuilder(
         builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
@@ -80,6 +89,7 @@ class MyApp extends StatelessWidget {
             theme: ThemeData(
               colorScheme: lightDynamic,
               useMaterial3: true,
+              textTheme: GoogleFonts.poppinsTextTheme(),
             ),
             // darkTheme: ThemeData(
             //   colorScheme: darkDynamic,

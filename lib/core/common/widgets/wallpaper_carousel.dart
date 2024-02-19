@@ -2,7 +2,6 @@
 
 import 'package:alt__wally/common/toast.dart';
 import 'package:alt__wally/features/app/presentation/pages/app_screen.dart';
-import 'package:alt__wally/features/home/presentation/pages/home_screen.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_state.dart';
 import 'package:alt__wally/features/wallpaper/domain/entities/wallpaper_entity.dart';
@@ -30,11 +29,77 @@ class WallpaperCarousel extends StatefulWidget {
 
 class _WallpaperCarouselState extends State<WallpaperCarousel> {
   int _current = 0;
-  int _selectedValue = 0;
+  bool loading = false;
   @override
   void initState() {
     super.initState();
     _current = widget.index;
+  }
+
+  void _setHomeScreen(element) async {
+    setState(() {
+      loading = true;
+    });
+    int location = WallpaperManager.HOME_SCREEN;
+    String? imageUrl = element?.imageUrl;
+    if (imageUrl != null) {
+      var file = await DefaultCacheManager().getSingleFile(imageUrl);
+      final bool result =
+          await WallpaperManager.setWallpaperFromFile(file.path, location);
+      if (result) {
+        showToast(message: "Wallpaper Set Successfully!!");
+      } else {
+        showToast(message: "Something went wrong!!");
+      }
+    }
+    Navigator.pop(context);
+    setState(() {
+      loading = false;
+    });
+  }
+
+  void _setLockScreen(element) async {
+    setState(() {
+      loading = true;
+    });
+    int location = WallpaperManager.LOCK_SCREEN;
+    String? imageUrl = element?.imageUrl;
+    if (imageUrl != null) {
+      var file = await DefaultCacheManager().getSingleFile(imageUrl);
+      final bool result =
+          await WallpaperManager.setWallpaperFromFile(file.path, location);
+      if (result) {
+        showToast(message: "Lock Screen Set Successfully!!");
+      } else {
+        showToast(message: "Something went wrong!!");
+      }
+    }
+    Navigator.pop(context);
+    setState(() {
+      loading = false;
+    });
+  }
+
+  void _setBoth(element) async {
+    setState(() {
+      loading = true;
+    });
+    int location = WallpaperManager.BOTH_SCREEN;
+    String? imageUrl = element?.imageUrl;
+    if (imageUrl != null) {
+      var file = await DefaultCacheManager().getSingleFile(imageUrl);
+      final bool result =
+          await WallpaperManager.setWallpaperFromFile(file.path, location);
+      if (result) {
+        showToast(message: "Successful!!");
+      } else {
+        showToast(message: "Something went wrong!!");
+      }
+    }
+    Navigator.pop(context);
+    setState(() {
+      loading = false;
+    });
   }
 
   List<Widget> generateImageTitles(context) {
@@ -77,82 +142,39 @@ class _WallpaperCarouselState extends State<WallpaperCarousel> {
                           height: 200,
                           width: double.infinity,
                           padding: EdgeInsets.only(top: 10),
-                          child: Column(
-                            children: [
-                              TextButton(
-                                  onPressed: () async {
-                                    int location = WallpaperManager.HOME_SCREEN;
-                                    String? imageUrl = element?.imageUrl;
-                                    if (imageUrl != null) {
-                                      var file = await DefaultCacheManager()
-                                          .getSingleFile(imageUrl);
-                                      final bool result = await WallpaperManager
-                                          .setWallpaperFromFile(
-                                              file.path, location);
-                                      if (result) {
-                                        showToast(
-                                            message:
-                                                "Wallpaper Set Successfully!!");
-                                      } else {
-                                        showToast(
-                                            message: "Something went wrong!!");
-                                      }
-                                    }
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text('Home Screen')),
-                              TextButton(
-                                  onPressed: () async {
-                                    int location = WallpaperManager.LOCK_SCREEN;
-                                    String? imageUrl = element?.imageUrl;
-                                    if (imageUrl != null) {
-                                      var file = await DefaultCacheManager()
-                                          .getSingleFile(imageUrl);
-                                      final bool result = await WallpaperManager
-                                          .setWallpaperFromFile(
-                                              file.path, location);
-                                      if (result) {
-                                        showToast(
-                                            message:
-                                                "Lock Screen Set Successfully!!");
-                                      } else {
-                                        showToast(
-                                            message: "Something went wrong!!");
-                                      }
-                                    }
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text('Lock Screen')),
-                              TextButton(
-                                  onPressed: () async {
-                                    int location = WallpaperManager.BOTH_SCREEN;
-                                    String? imageUrl = element?.imageUrl;
-                                    if (imageUrl != null) {
-                                      var file = await DefaultCacheManager()
-                                          .getSingleFile(imageUrl);
-                                      final bool result = await WallpaperManager
-                                          .setWallpaperFromFile(
-                                              file.path, location);
-                                      if (result) {
-                                        showToast(message: "Successfull!!");
-                                      } else {
-                                        showToast(
-                                            message: "Something went wrong!!");
-                                      }
-                                    }
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text('Home Screen + Lock Screen')),
-                            ],
-                          ),
+                          child: loading
+                              ? Center(
+                                  child: CircularProgressIndicator(
+                                      color: Colors.black),
+                                )
+                              : Column(
+                                  children: [
+                                    TextButton(
+                                        onPressed: () {
+                                          _setHomeScreen(element);
+                                        },
+                                        child: Text('Home Screen')),
+                                    TextButton(
+                                        onPressed: () {
+                                          _setLockScreen(element);
+                                        },
+                                        child: Text('Lock Screen')),
+                                    TextButton(
+                                        onPressed: () {
+                                          _setBoth(element);
+                                        },
+                                        child:
+                                            Text('Home Screen + Lock Screen')),
+                                  ],
+                                ),
                         );
                       },
                     );
                   },
-                  child: Text('Set As'),
                   style: ElevatedButton.styleFrom(
                     textStyle: TextStyle(fontSize: 12),
                   ),
+                  child: Text('Set As'),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -181,13 +203,7 @@ class _WallpaperCarouselState extends State<WallpaperCarousel> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: ValueKey<int>(_selectedValue),
       appBar: AppBar(
-        // leading: IconButton(
-        //     onPressed: () {
-        //       Navigator.pushNamed(context, HomeScreen.routeName);
-        //     },
-        //     icon: const Icon(Icons.home)),
         title: Image.asset('assets/images/name.png', height: 24),
         centerTitle: true,
         actions: [

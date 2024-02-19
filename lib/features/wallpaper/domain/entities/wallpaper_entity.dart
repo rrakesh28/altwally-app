@@ -17,6 +17,9 @@ class WallpaperEntity extends Equatable {
   final int? height;
   final int? width;
   bool? favourite;
+  final int? likes;
+  final int? views;
+  final int? downloads;
   final bool? wallOfTheMonth;
   final Timestamp? createdAt;
   final Timestamp? updatedAt;
@@ -36,6 +39,9 @@ class WallpaperEntity extends Equatable {
     this.height,
     this.width,
     this.favourite,
+    this.likes,
+    this.views,
+    this.downloads,
     this.createdAt,
     this.updatedAt,
     this.user,
@@ -56,6 +62,9 @@ class WallpaperEntity extends Equatable {
         height,
         width,
         favourite,
+        likes,
+        views,
+        downloads,
         user,
         category,
       ];
