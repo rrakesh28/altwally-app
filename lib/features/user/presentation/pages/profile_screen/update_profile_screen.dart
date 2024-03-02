@@ -94,14 +94,14 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   Future<void> _cropBannerImage() async {
     CroppedFile? croppedFile = await ImageCropper().cropImage(
       sourcePath: bannerImage!.path,
-      aspectRatioPresets: [CropAspectRatioPreset.ratio16x9],
+      aspectRatio: CropAspectRatio(ratioX: 16, ratioY: 9),
       uiSettings: [
         AndroidUiSettings(
-            toolbarTitle: 'Cropper',
-            toolbarColor: Colors.black,
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.original,
-            lockAspectRatio: false),
+          toolbarTitle: 'Cropper',
+          toolbarColor: Colors.black,
+          toolbarWidgetColor: Colors.white,
+          lockAspectRatio: true,
+        ),
         IOSUiSettings(
           title: 'Cropper',
         ),
@@ -122,11 +122,11 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       aspectRatioPresets: [CropAspectRatioPreset.square],
       uiSettings: [
         AndroidUiSettings(
-            toolbarTitle: 'Cropper',
-            toolbarColor: Colors.black,
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.original,
-            lockAspectRatio: false),
+          toolbarTitle: 'Cropper',
+          toolbarColor: Colors.black,
+          toolbarWidgetColor: Colors.white,
+          lockAspectRatio: true,
+        ),
         IOSUiSettings(
           title: 'Cropper',
         ),
@@ -137,6 +137,10 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       File? convertedFile = File(croppedFile.path);
       setState(() {
         profileImage = convertedFile;
+      });
+    } else {
+      setState(() {
+        profileImage = null;
       });
     }
   }

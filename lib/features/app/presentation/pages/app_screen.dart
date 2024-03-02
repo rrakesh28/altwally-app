@@ -35,7 +35,7 @@ class _AppScreenState extends State<AppScreen> {
     return Scaffold(
       body: _screens.elementAt(_selectedIndex),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
+        padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8.0),
         child: GNav(
           gap: 8,
           color: Colors.black,

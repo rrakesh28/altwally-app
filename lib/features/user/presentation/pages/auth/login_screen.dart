@@ -6,6 +6,7 @@ import 'package:alt__wally/features/app/presentation/pages/app_screen.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/credential/credential_cubit.dart';
 import 'package:alt__wally/features/user/presentation/pages/auth/signup_screen.dart';
+import 'package:alt__wally/features/user/presentation/pages/forgot_password/forgot_password_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -55,6 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Container(
+                  height: 400,
                   decoration: const BoxDecoration(
                     image: DecorationImage(
                       image: AssetImage('assets/images/gradient.png'),
@@ -63,7 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: Center(
                     child: Container(
-                      height: 300.0,
+                      padding: const EdgeInsets.only(top: 10),
                       width: 300,
                       child: Image.asset(
                         'assets/images/name.png',
@@ -71,6 +73,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
+                ),
+                const SizedBox(
+                  height: 20,
                 ),
                 Padding(
                   padding: const EdgeInsets.all(20),
@@ -83,14 +88,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           "Welcome to Alt Wally.",
                           style: TextStyle(
                             fontSize: 18,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                         const Text(
                           'Find a clean and Minimal Collection which you wont find!!',
                           style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.black54,
+                              fontSize: 10,
+                              color: Colors.black38,
                               fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(
@@ -102,11 +107,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
-                                "Email",
+                                "Email Address",
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w800,
                                 ),
+                              ),
+                              const SizedBox(
+                                height: 10,
                               ),
                               CustomTextField(
                                 controller: _emailController,
@@ -121,9 +129,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               const Text(
                                 "Password",
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                 ),
+                              ),
+                              const SizedBox(
+                                height: 10,
                               ),
                               CustomTextField(
                                 controller: _passwordController,
@@ -135,33 +146,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                     state: credentialState,
                                     fieldName: 'password'),
                               Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
-                                  Row(
-                                    children: [
-                                      Checkbox(
-                                        value: isChecked,
-                                        onChanged: (bool? newValue) {
-                                          setState(() {
-                                            isChecked =
-                                                newValue!; // Use newValue here
-                                          });
-                                        },
-                                      ),
-                                      const Text(
-                                        "Remember Me",
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: GlobalVariables.grayColor),
-                                      ),
-                                    ],
-                                  ),
                                   TextButton(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      Navigator.pushNamed(context,
+                                          ForgotPasswordScreen.routeName);
+                                    },
                                     child: const Text(
-                                      'Forgot Password',
-                                      style: TextStyle(color: Colors.black),
+                                      'Reset Password',
+                                      style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF1F71ED)),
                                     ),
                                   )
                                 ],
@@ -188,27 +185,21 @@ class _LoginScreenState extends State<LoginScreen> {
                                         ),
                                       )
                                     : const Text(
-                                        "Sign In",
+                                        "Login",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
                                       ),
                               ),
                               const SizedBox(
-                                height: 20,
-                              ),
-                              const Row(children: <Widget>[
-                                Expanded(child: Divider()),
-                                Text("or continue with"),
-                                Expanded(child: Divider()),
-                              ]),
-                              const SizedBox(
-                                height: 10,
+                                height: 5,
                               ),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   const Text(
-                                    'Dont have an account?',
+                                    'New to Alt Wally?',
                                     style: TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 12,
                                         color: GlobalVariables.grayColor),
                                   ),
                                   TextButton(
@@ -217,8 +208,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                             context, SignUpScreen.routeName);
                                       },
                                       child: const Text(
-                                        'Sing up',
-                                        style: TextStyle(color: Colors.black),
+                                        'Sign up',
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF1F71ED)),
                                       ))
                                 ],
                               )

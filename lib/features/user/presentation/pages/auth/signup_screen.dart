@@ -40,10 +40,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   void _signUp() {
-    if (!isChecked) {
-      showToast(message: 'Please check the terms of use');
-      return;
-    }
+    // if (!isChecked) {
+    //   showToast(message: 'Please check the terms of use');
+    //   return;
+    // }
 
     if (_nameController.text.isEmpty) {
       showToast(message: 'enter your name');
@@ -82,7 +82,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       body: BlocConsumer<CredentialCubit, CredentialState>(
           listener: (context, credentialState) {
         if (credentialState is RegisterSuccess) {
-          showToast(message: "Sing Up Successful!!");
+          showToast(message: "Sign Up Successful!!");
           BlocProvider.of<AuthCubit>(context).loggedIn();
           Navigator.pushNamedAndRemoveUntil(
               context, AppScreen.routeName, (route) => false);
@@ -99,19 +99,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Container(
+                height: 400,
                 decoration: const BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage(
-                        'assets/images/gradient.png'), // Use your actual asset image path
+                    image: AssetImage('assets/images/gradient.png'),
                     fit: BoxFit.cover,
                   ),
                 ),
                 child: Center(
                   child: Container(
-                    height: 250.0,
+                    padding: EdgeInsets.only(top: 10),
                     width: 300,
                     child: Image.asset(
-                      'assets/images/name.png', // Use your actual asset image path
+                      'assets/images/name.png',
                       fit: BoxFit.contain,
                     ),
                   ),
@@ -134,8 +134,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     const Text(
                       'We are waiting all the time. register now and enjoy wallpapers for free',
                       style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.black54,
+                          fontSize: 10,
+                          color: Colors.black38,
                           fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(
@@ -149,9 +149,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           const Text(
                             "Name",
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 12,
                               fontWeight: FontWeight.w800,
                             ),
+                          ),
+                          const SizedBox(
+                            height: 10,
                           ),
                           CustomTextField(
                             controller: _nameController,
@@ -166,9 +169,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           const Text(
                             "Email",
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 12,
                               fontWeight: FontWeight.w800,
                             ),
+                          ),
+                          const SizedBox(
+                            height: 10,
                           ),
                           CustomTextField(
                             controller: _emailController,
@@ -183,9 +189,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           const Text(
                             "Password",
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 12,
                               fontWeight: FontWeight.w800,
                             ),
+                          ),
+                          const SizedBox(
+                            height: 10,
                           ),
                           CustomTextField(
                             controller: _passwordController,
@@ -201,57 +210,59 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           const Text(
                             "Confirm Password",
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 12,
                               fontWeight: FontWeight.w800,
                             ),
+                          ),
+                          const SizedBox(
+                            height: 10,
                           ),
                           CustomTextField(
                             controller: _confirmPasswordController,
                             hintText: 'Confirm Password',
                             isObscure: true,
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Checkbox(
-                                    value: isChecked,
-                                    onChanged: (bool? newValue) {
-                                      setState(() {
-                                        isChecked = newValue!;
-                                      });
-                                    },
-                                  ),
-                                  Text.rich(
-                                    TextSpan(
-                                      text: 'I agree to the ',
-                                      style: const TextStyle(
-                                          fontSize: 12,
-                                          color: GlobalVariables.grayColor),
-                                      children: <TextSpan>[
-                                        TextSpan(
-                                          text: 'terms',
-                                          style: const TextStyle(
-                                            decoration:
-                                                TextDecoration.underline,
-                                            color: Colors.deepOrange,
-                                          ),
-                                          recognizer: TapGestureRecognizer()
-                                            ..onTap = () {
-                                              print('Terms clicked!');
-                                            },
-                                        ),
-                                        const TextSpan(
-                                          text: ' to use',
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                          // Row(
+                          //   children: [
+                          //     Row(
+                          //       children: [
+                          //         Checkbox(
+                          //           value: isChecked,
+                          //           onChanged: (bool? newValue) {
+                          //             setState(() {
+                          //               isChecked = newValue!;
+                          //             });
+                          //           },
+                          //         ),
+                          //         Text.rich(
+                          //           TextSpan(
+                          //             text: 'I agree to the ',
+                          //             style: const TextStyle(
+                          //                 fontSize: 12,
+                          //                 color: GlobalVariables.grayColor),
+                          //             children: <TextSpan>[
+                          //               TextSpan(
+                          //                 text: 'terms',
+                          //                 style: const TextStyle(
+                          //                   decoration:
+                          //                       TextDecoration.underline,
+                          //                   color: Colors.deepOrange,
+                          //                 ),
+                          //                 recognizer: TapGestureRecognizer()
+                          //                   ..onTap = () {
+                          //                     print('Terms clicked!');
+                          //                   },
+                          //               ),
+                          //               const TextSpan(
+                          //                 text: ' to use',
+                          //               ),
+                          //             ],
+                          //           ),
+                          //         ),
+                          //       ],
+                          //     ),
+                          //   ],
+                          // ),
                           const SizedBox(
                             height: 10,
                           ),
@@ -279,15 +290,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   ),
                           ),
                           const SizedBox(
-                            height: 20,
-                          ),
-                          const Row(children: <Widget>[
-                            Expanded(child: Divider()),
-                            Text("OR"),
-                            Expanded(child: Divider()),
-                          ]),
-                          const SizedBox(
-                            height: 20,
+                            height: 10,
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,

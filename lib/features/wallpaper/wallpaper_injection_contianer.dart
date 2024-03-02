@@ -1,5 +1,6 @@
 import 'package:alt__wally/features/wallpaper/data/repository/wallpaper_repository_impl.dart';
 import 'package:alt__wally/features/wallpaper/domain/repository/wallpaper_repository.dart';
+import 'package:alt__wally/features/wallpaper/domain/usecases/get_category_wallpapers.dart';
 import 'package:alt__wally/features/wallpaper/domain/usecases/get_popular_wallpapers_usecase.dart';
 import 'package:alt__wally/features/wallpaper/domain/usecases/get_recently_added_wallpapers_usecase.dart';
 import 'package:alt__wally/features/wallpaper/domain/usecases/toggle_favourite_wallpaper_usecase.dart';
@@ -7,6 +8,7 @@ import 'package:alt__wally/features/wallpaper/domain/usecases/add_wallpaper_usec
 import 'package:alt__wally/features/wallpaper/domain/usecases/get_favourite_wallpapers_usecase.dart';
 import 'package:alt__wally/features/wallpaper/domain/usecases/get_wall_of_the_month_usecase.dart';
 import 'package:alt__wally/features/wallpaper/domain/usecases/get_wallpapers_by_user_id_usecase.dart';
+import 'package:alt__wally/features/wallpaper/presentation/cubit/get_category_wallpapers/get_category_wallpapers_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/popular_wallpapers/popular_wallpapers_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/recently_added/recently_added_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/toggle_favourite/toggle_favourite_cubit.dart';
@@ -30,6 +32,8 @@ Future<void> wallpaperInjectionContainer() async {
       GetRecentlyAddedWallpapersCubit(getRecentlyAddedUseCase: sl.call()));
   sl.registerFactory<GetPopularWallpapersCubit>(
       () => GetPopularWallpapersCubit(getPopularWallpapersUseCase: sl.call()));
+  sl.registerFactory<GetCategoryWallpapersCubit>(() =>
+      GetCategoryWallpapersCubit(getCategoryWallpapersUseCase: sl.call()));
 
   //UseCases
   sl.registerLazySingleton<AddWallpaperUseCase>(
@@ -46,6 +50,8 @@ Future<void> wallpaperInjectionContainer() async {
       () => GetRecentlyAddedUseCase(repository: sl.call()));
   sl.registerLazySingleton<GetPopularWallpapersUseCase>(
       () => GetPopularWallpapersUseCase(repository: sl.call()));
+  sl.registerLazySingleton<GetCategoryWallpapersUseCase>(
+      () => GetCategoryWallpapersUseCase(repository: sl.call()));
 
   //Repository
   sl.registerLazySingleton<WallpaperRepository>(

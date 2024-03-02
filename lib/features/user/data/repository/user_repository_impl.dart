@@ -15,6 +15,8 @@ class UserRepositoryImpl implements UserRepository {
   Future<Resource> forgotPassword(String email) async {
     try {
       await auth.sendPasswordResetEmail(email: email);
+      print('sent');
+      print(email);
       return Resource.success(data: '');
     } catch (e) {
       print(e);
@@ -54,6 +56,7 @@ class UserRepositoryImpl implements UserRepository {
 
   @override
   Future<Resource> getUpdateUser(UserEntity user) async {
+    print(user);
     try {
       final CollectionReference userCollection = fireStore.collection('users');
       var userDoc = await userCollection.doc(user.uid).get();
@@ -143,6 +146,7 @@ class UserRepositoryImpl implements UserRepository {
         return Resource.failure(errorMessage: "Email Id Already Exists");
       }
     } catch (e) {
+      print(e);
       if (e is FirebaseAuthException) {
         if (e.code == 'email-already-in-use') {
           return Resource.failure(errorMessage: "Email Id Already Exists");

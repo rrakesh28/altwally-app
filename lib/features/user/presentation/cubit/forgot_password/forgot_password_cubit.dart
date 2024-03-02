@@ -9,6 +9,7 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
 
   Future<void> submit(emailId) async {
     try {
+      emit(ForgotPasswordLoading());
       await forgotPasswordUseCase.call(emailId);
       emit(ForgotPasswordSuccess());
     } catch (e) {

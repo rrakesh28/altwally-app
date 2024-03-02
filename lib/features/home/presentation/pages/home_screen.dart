@@ -1,4 +1,8 @@
+import 'package:alt__wally/features/app/presentation/pages/app_screen.dart';
 import 'package:alt__wally/features/category/presentation/cubit/get_categories_cubit/category_cubit.dart';
+import 'package:alt__wally/features/settings/presentation/pages/settings_screen.dart';
+import 'package:alt__wally/features/user/presentation/cubit/auth/auth_cubit.dart';
+import 'package:alt__wally/features/user/presentation/cubit/auth/auth_state.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/recently_added/recently_added_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/recently_added/recently_added_state.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/toggle_favourite/toggle_favourite_cubit.dart';
@@ -52,6 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: RefreshIndicator(
         onRefresh: _refresh,
         child: SafeArea(
@@ -63,22 +68,69 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Center(
-                        child: Image.asset(
-                          'assets/images/name.png',
-                          height: 25,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.pushNamed(
+                                  context, SettingsScreen.routeName);
+                            },
+                            child: Image.asset(
+                              'assets/images/menu.png',
+                              height: 20,
+                            ),
+                          ),
+                          Image.asset(
+                            'assets/images/name.png',
+                            height: 30,
+                          ),
+                          BlocBuilder<AuthCubit, AuthState>(
+                            builder: (context, state) {
+                              if (state is Authenticated) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const AppScreen(index: 3),
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    height: 40,
+                                    width: 40,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: ClipOval(
+                                      child: Image.network(
+                                        state.user.profileImageUrl!,
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
+                              return Container();
+                            },
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 20),
                       const Text(
                         "Wall of the month",
                         style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
+                      const SizedBox(height: 10),
                       Container(
-                        height: 200,
+                        height: 160,
                         child: SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
@@ -111,12 +163,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                               },
                                               child: Container(
                                                 width: 130,
+                                                height: 160,
                                                 margin: const EdgeInsets.only(
                                                     right: 10),
                                                 clipBehavior: Clip.antiAlias,
                                                 decoration: BoxDecoration(
                                                   borderRadius:
-                                                      BorderRadius.circular(20),
+                                                      BorderRadius.circular(10),
                                                 ),
                                                 padding: EdgeInsets.zero,
                                                 child: CachedNetworkImage(
@@ -163,18 +216,23 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       const SizedBox(
-                        height: 10,
+                        height: 20,
                       ),
                     ],
                   ),
                 ),
                 const SliverToBoxAdapter(
                   child: Text(
-                    'Categories',
+                    'Collections',
                     style: TextStyle(
                       fontSize: 20,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.bold,
                     ),
+                  ),
+                ),
+                const SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 10,
                   ),
                 ),
                 BlocBuilder<CategoryCubit, CategoryState>(
@@ -206,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Container(
                                       clipBehavior: Clip.antiAlias,
                                       decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(20),
+                                        borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: CachedNetworkImage(
                                         height: double.infinity,
@@ -261,8 +319,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     'Recently Added',
                     style: TextStyle(
                       fontSize: 20,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.bold,
                     ),
+                  ),
+                ),
+                const SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 10,
                   ),
                 ),
                 BlocBuilder<GetRecentlyAddedWallpapersCubit,
@@ -275,7 +338,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 crossAxisCount: 2,
                                 crossAxisSpacing: 8.0,
                                 mainAxisSpacing: 8.0,
-                                childAspectRatio: 0.8),
+                                childAspectRatio: 0.6),
                         delegate: SliverChildBuilderDelegate(
                           (BuildContext context, int index) {
                             return GestureDetector(
@@ -293,10 +356,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 children: [
                                   Container(
                                       width: double.infinity,
-                                      height: 1000,
                                       clipBehavior: Clip.antiAlias,
                                       decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(20),
+                                        borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: CachedNetworkImage(
                                         height: double.infinity,
@@ -332,8 +394,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                         decoration: BoxDecoration(
                                           color: Colors.black.withOpacity(0.5),
                                           borderRadius: const BorderRadius.only(
-                                            bottomLeft: Radius.circular(20),
-                                            bottomRight: Radius.circular(20),
+                                            bottomLeft: Radius.circular(10),
+                                            bottomRight: Radius.circular(10),
                                           ),
                                         ),
                                         child: Padding(
@@ -375,6 +437,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     )
                                                   : const Icon(
                                                       Icons.favorite_outline,
+                                                      color: Colors.white,
                                                     ),
                                               onPressed: () {
                                                 BlocProvider.of<

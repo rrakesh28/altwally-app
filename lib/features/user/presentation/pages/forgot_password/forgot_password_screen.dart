@@ -1,14 +1,10 @@
 import 'package:alt__wally/common/toast.dart';
 import 'package:alt__wally/common/widgets/custom_textfield.dart';
-import 'package:alt__wally/constants/global_variables.dart';
 import 'package:alt__wally/core/common/widgets/validation_error_widget.dart';
-import 'package:alt__wally/features/home/presentation/pages/home_screen.dart';
-import 'package:alt__wally/features/user/presentation/cubit/auth/auth_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/credential/credential_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/forgot_password/forgot_password_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/forgot_password/forgot_password_state.dart';
 import 'package:alt__wally/features/user/presentation/pages/auth/login_screen.dart';
-import 'package:alt__wally/features/user/presentation/pages/auth/signup_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -61,7 +57,7 @@ class _ForgotPasswordState extends State<ForgotPasswordScreen> {
                   ),
                   child: Center(
                     child: Container(
-                      height: 300.0,
+                      height: 400.0,
                       width: 300,
                       child: Image.asset(
                         'assets/images/name.png',
@@ -78,17 +74,17 @@ class _ForgotPasswordState extends State<ForgotPasswordScreen> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         const Text(
-                          "Welcome to Alt Wally.",
+                          "Verify your Email Id",
                           style: TextStyle(
                             fontSize: 18,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                         const Text(
-                          'Find a clean and Minimal Collection which you wont find!!',
+                          'You will receive an password reset link',
                           style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.black54,
+                              fontSize: 10,
+                              color: Colors.black38,
                               fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(

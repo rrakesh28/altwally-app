@@ -262,7 +262,7 @@ class _WallpaperCarouselState extends State<WallpaperCarousel> {
                       aspectRatio: 14 / 16,
                       enableInfiniteScroll: false,
                       initialPage: _current,
-                      viewportFraction: 0.7,
+                      viewportFraction: 0.6,
                       onPageChanged: (index, other) {
                         setState(() {
                           _current = index;

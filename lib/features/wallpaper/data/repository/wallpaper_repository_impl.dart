@@ -105,16 +105,6 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
           views: wallpaperData['views'],
         );
 
-        await wallpapersCollection
-            .doc(document.id)
-            .update({'views': wallpaperData['views'] ?? 0 + 1});
-        await wallpapersCollection
-            .doc(document.id)
-            .update({'likes': wallpaperData['likes'] ?? 0 + 1});
-        await wallpapersCollection
-            .doc(document.id)
-            .update({'downloads': wallpaperData['downloads'] ?? 0 + 1});
-
         wallpaper.favourite = favoriteWallpaperIds.contains(wallpaper.id);
 
         wallpapers.add(wallpaper);
@@ -168,16 +158,16 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
           width: wallpaperData['width'],
         );
 
-        // Update likes, views, and downloads counts
-        await wallpapersCollection
-            .doc(document.id)
-            .update({'views': wallpaperData['views'] + 1});
-        await wallpapersCollection
-            .doc(document.id)
-            .update({'likes': wallpaperData['likes'] + 1});
-        await wallpapersCollection
-            .doc(document.id)
-            .update({'downloads': wallpaperData['downloads'] + 1});
+        // // Update likes, views, and downloads counts
+        // await wallpapersCollection
+        //     .doc(document.id)
+        //     .update({'views': wallpaperData['views'] + 1});
+        // await wallpapersCollection
+        //     .doc(document.id)
+        //     .update({'likes': wallpaperData['likes'] + 1});
+        // await wallpapersCollection
+        //     .doc(document.id)
+        //     .update({'downloads': wallpaperData['downloads'] + 1});
 
         wallpaper.favourite = favoriteWallpaperIds.contains(wallpaper.id);
 
@@ -232,17 +222,36 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
           .where(FieldPath.documentId, whereIn: wallpaperIds)
           .get();
 
-      List<WallpaperModel> wallpapers = wallpapersSnapshot.docs.map((doc) {
-        var wallpaperData = doc.data() as Map<String, dynamic>?;
-        return WallpaperModel(
-          id: doc.id,
-          userId: wallpaperData?['user_id'] as String?,
-          categoryId: wallpaperData?['category_id'] as String? ?? '',
-          title: wallpaperData?['title'] as String? ?? '',
-          imageUrl: wallpaperData?['image_url'] as String? ?? '',
-          favourite: true,
+      List<WallpaperModel> wallpapers = [];
+
+      for (var document in wallpapersSnapshot.docs) {
+        var wallpaperData = document.data() as Map<String, dynamic>;
+
+        var categorySnapshot = await firestore
+            .collection("categories")
+            .doc(wallpaperData['category_id'])
+            .get();
+        var categoryData = categorySnapshot.data();
+
+        var wallpaper = WallpaperModel(
+          id: document.id,
+          userId: wallpaperData['user_id'],
+          categoryId: wallpaperData['category_id'],
+          title: wallpaperData['title'],
+          imageUrl: wallpaperData['image_url'],
+          size: wallpaperData['size'],
+          height: wallpaperData['height'],
+          width: wallpaperData['width'],
+          category: CategoryModel(
+            id: wallpaperData['category_id'],
+            name: categoryData?['name'],
+          ),
         );
-      }).toList();
+
+        wallpaper.favourite = true;
+
+        wallpapers.add(wallpaper);
+      }
 
       return Resource.success(data: wallpapers);
     } catch (e) {
@@ -283,17 +292,6 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
           height: wallpaperData['height'],
           width: wallpaperData['width'],
         );
-
-        // Update likes, views, and downloads counts
-        await wallpapersCollection
-            .doc(document.id)
-            .update({'views': wallpaperData['views'] + 1});
-        await wallpapersCollection
-            .doc(document.id)
-            .update({'likes': wallpaperData['likes'] + 1});
-        await wallpapersCollection
-            .doc(document.id)
-            .update({'downloads': wallpaperData['downloads'] + 1});
 
         wallpaper.favourite = favoriteWallpaperIds.contains(wallpaper.id);
 
@@ -351,17 +349,6 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
           width: wallpaperData['width'],
         );
 
-        // Update likes, views, and downloads counts
-        await wallpapersCollection
-            .doc(document.id)
-            .update({'views': wallpaperData['views'] + 1});
-        await wallpapersCollection
-            .doc(document.id)
-            .update({'likes': wallpaperData['likes'] + 1});
-        await wallpapersCollection
-            .doc(document.id)
-            .update({'downloads': wallpaperData['downloads'] + 1});
-
         wallpaper.favourite = favoriteWallpaperIds.contains(wallpaper.id);
 
         wallpapers.add(wallpaper);
@@ -395,7 +382,6 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
               (doc.data() as Map<String, dynamic>)['wallpaper_id'] as String)
           .toList();
 
-      // Iterate through the shuffled documents
       for (var document in documents) {
         var wallpaperData = document.data() as Map<String, dynamic>;
 
@@ -419,17 +405,6 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
           height: wallpaperData['height'],
           width: wallpaperData['width'],
         );
-
-        // Update likes, views, and downloads counts
-        await wallpapersCollection
-            .doc(document.id)
-            .update({'views': wallpaperData['views'] + 1});
-        await wallpapersCollection
-            .doc(document.id)
-            .update({'likes': wallpaperData['likes'] + 1});
-        await wallpapersCollection
-            .doc(document.id)
-            .update({'downloads': wallpaperData['downloads'] + 1});
 
         wallpaper.favourite = favoriteWallpaperIds.contains(wallpaper.id);
 

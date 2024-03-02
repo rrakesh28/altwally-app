@@ -40,13 +40,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _refresh() async {
     final authState = context.read<AuthCubit>().state;
 
-    final profileState = context.read<ProfileCubit>().state;
     if (authState is Authenticated) {
-      if (profileState is ProfileLoaded) {
-        wallpapersData = profileState.wallpapers;
-      } else {
-        BlocProvider.of<ProfileCubit>(context).fetchData(authState.uid);
-      }
+      BlocProvider.of<ProfileCubit>(context).fetchData(authState.uid);
     }
   }
 
@@ -113,12 +108,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       return Container(
                                         height: 75,
                                         width: 75,
-                                        decoration: BoxDecoration(
+                                        decoration: const BoxDecoration(
                                           shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: Colors.black,
-                                            width: 4.0,
-                                          ),
                                         ),
                                         child: ClipOval(
                                           child: Image.network(

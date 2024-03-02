@@ -16,6 +16,7 @@ import 'package:alt__wally/features/wallpaper/presentation/cubit/recently_added/
 import 'package:alt__wally/features/wallpaper/presentation/cubit/toggle_favourite/toggle_favourite_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/wall_of_the_month/wall_of_the_month_cubit.dart';
 import 'package:alt__wally/firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +31,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
+  );
+  FirebaseFirestore.instance.settings = Settings(
+    persistenceEnabled: true,
   );
   await di.init();
   runApp(const MyApp());
@@ -87,15 +91,22 @@ class MyApp extends StatelessWidget {
           return MaterialApp(
             title: 'Alt Wally',
             theme: ThemeData(
-              colorScheme: lightDynamic,
+              colorScheme: const ColorScheme(
+                primary: Colors.black,
+                secondary: Colors.white,
+                surface: Colors.white,
+                background: Colors.white,
+                error: Colors.white,
+                onPrimary: Colors.white,
+                onSecondary: Colors.black,
+                onSurface: Colors.black,
+                onBackground: Colors.black,
+                onError: Colors.black,
+                brightness: Brightness.light,
+              ),
               useMaterial3: true,
-              textTheme: GoogleFonts.poppinsTextTheme(),
+              textTheme: GoogleFonts.hindTextTheme(),
             ),
-            // darkTheme: ThemeData(
-            //   colorScheme: darkDynamic,
-            //   brightness: Brightness.dark,
-            //   useMaterial3: true,
-            // ),
             debugShowCheckedModeBanner: false,
             initialRoute: '/',
             onGenerateRoute: (settings) => generateRoute(settings),

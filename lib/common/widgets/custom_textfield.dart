@@ -21,9 +21,10 @@ class CustomTextField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       obscureText: isObscure ?? false,
+      style: TextStyle(fontSize: 12),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+        hintStyle: const TextStyle(color: Colors.grey, fontSize: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(
@@ -45,7 +46,7 @@ class CustomTextField extends StatelessWidget {
           ),
         ),
         contentPadding:
-            const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+            const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
       ),
       validator: (val) {
         if ((val == null || val.isEmpty) && required) {

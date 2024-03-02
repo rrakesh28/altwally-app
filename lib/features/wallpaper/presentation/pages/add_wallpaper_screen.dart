@@ -71,12 +71,12 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
               .toInt();
         });
 
-        double fileSizeInMB = fileSize / (1024 * 1024);
+        // double fileSizeInMB = fileSize / (1024 * 1024);
 
-        if (fileSizeInMB > 2) {
-          showToast(message: "Image size shouldn't be greater than 2MB");
-          return;
-        }
+        // if (fileSizeInMB > 2) {
+        //   showToast(message: "Image size shouldn't be greater than 2MB");
+        //   return;
+        // }
 
         setState(() {
           file = File(result.files.single.path!);
@@ -145,14 +145,14 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
   Future<void> _cropImage() async {
     CroppedFile? croppedFile = await ImageCropper().cropImage(
       sourcePath: file!.path,
-      aspectRatioPresets: [CropAspectRatioPreset.ratio16x9],
+      aspectRatio: CropAspectRatio(ratioX: 9, ratioY: 16),
       uiSettings: [
         AndroidUiSettings(
-            toolbarTitle: 'Cropper',
-            toolbarColor: Colors.black,
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.original,
-            lockAspectRatio: false),
+          toolbarTitle: 'Cropper',
+          toolbarColor: Colors.black,
+          toolbarWidgetColor: Colors.white,
+          lockAspectRatio: true,
+        ),
         IOSUiSettings(
           title: 'Cropper',
         ),
@@ -164,6 +164,10 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
       setState(() {
         file = convertedFile;
       });
+    } else {
+      setState(() {
+        file = null;
+      });
     }
   }
 
@@ -173,7 +177,10 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
         child: Scaffold(
       key: _scaffoldState,
       appBar: AppBar(
-        title: const Text('Display Your Creations!'),
+        title: const Text(
+          'Display Your Creations!',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
       ),
       body: BlocConsumer<AddWallpaperCubit, AddWallpaperState>(
@@ -203,23 +210,34 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
                     children: [
                       SizedBox(
                         height: file != null ? 200 : 0,
-                        child: file != null ? Image.file(file!) : Container(),
+                        child: file != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.file(
+                                  file!,
+                                ),
+                              )
+                            : Container(),
                       ),
-                      Positioned(
-                          top: -10,
-                          right: -10,
-                          child: IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  file = null;
-                                });
-                              },
-                              icon: const Icon(
-                                Icons.cancel,
-                                color: Colors.white,
-                              )))
                     ],
                   ),
+                ),
+                if (file != null)
+                  Center(
+                    child: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          file = null;
+                        });
+                      },
+                      icon: const Icon(
+                        Icons.cancel_outlined,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                const SizedBox(
+                  height: 10,
                 ),
                 Container(
                   child: file != null
@@ -235,6 +253,7 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
                               child: Padding(
                                 padding: const EdgeInsets.all(18.0),
                                 child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Image.asset(
                                       'assets/images/upload-icon.png',
@@ -250,19 +269,17 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
                                     const SizedBox(
                                       height: 20,
                                     ),
-                                    const SizedBox(
+                                    SizedBox(
                                       width: 206,
                                       child: Text(
                                         'Bring your screen to life – upload your perfect wallpaper here!',
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w200,
-                                        ),
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w200,
+                                            color:
+                                                Colors.black.withOpacity(0.5)),
                                       ),
-                                    ),
-                                    const SizedBox(
-                                      height: 20,
                                     ),
                                   ],
                                 ),
@@ -283,7 +300,7 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
                   'Wallpaper name',
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.bold,
                     height: 0,
                   ),
                 ),
@@ -299,10 +316,10 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
                   height: 20,
                 ),
                 const Text(
-                  'Category',
+                  'Collection',
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.bold,
                     height: 0,
                   ),
                 ),
@@ -319,7 +336,7 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
                   'Aspect Ratio',
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.bold,
                     height: 0,
                   ),
                 ),
@@ -355,6 +372,26 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
                   ValidationErrorWidget(state: state, fieldName: 'height'),
                 if (state is AddWallpaperFailed)
                   ValidationErrorWidget(state: state, fieldName: 'width'),
+                const SizedBox(
+                  height: 20,
+                ),
+                RichText(
+                  text: TextSpan(
+                    style: DefaultTextStyle.of(context).style,
+                    children: const [
+                      TextSpan(text: 'Note: '),
+                      TextSpan(
+                        text: 'Copyrighted, Reported, or Sensitive',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      TextSpan(
+                          text:
+                              ' wallpapers may not be approved or can be removed permanently from the app without any prior notice.'),
+                    ],
+                  ),
+                ),
                 const SizedBox(
                   height: 20,
                 ),

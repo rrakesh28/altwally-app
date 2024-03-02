@@ -10,6 +10,7 @@ import 'package:alt__wally/features/user/domain/usecases/sign_up_usecase.dart';
 import 'package:alt__wally/features/user/domain/usecases/sing_out_usecase.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/credential/credential_cubit.dart';
+import 'package:alt__wally/features/user/presentation/cubit/forgot_password/forgot_password_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/profile/profile_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/update/update_user_cubit.dart';
 
@@ -27,6 +28,9 @@ Future<void> userInjectionContainer() async {
         forgotPasswordUseCase: sl.call(),
         signInUseCase: sl.call(),
         signUpUseCase: sl.call(),
+      ));
+  sl.registerFactory<ForgotPasswordCubit>(() => ForgotPasswordCubit(
+        forgotPasswordUseCase: sl.call(),
       ));
   sl.registerFactory<ProfileCubit>(() => ProfileCubit(
       getUserByIdUseCase: sl.call(), getWallpapersByUserIdUseCase: sl.call()));
