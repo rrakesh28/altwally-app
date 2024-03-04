@@ -7,7 +7,7 @@ abstract class UserRepository {
   Future<Resource> signIn(UserEntity user);
   Future<Resource> signUp(UserEntity user);
   Future<void> signOut();
-  Future<Resource> getUpdateUser(UserEntity user);
+  Future<Resource> getUpdateUser(UserEntity user, String currentPassword);
   Future<String> getCurrentUId();
   Future<Resource> getUserById(String uid);
 }

@@ -11,10 +11,10 @@ class UpdateUserCubit extends Cubit<UpdateUserState> {
   UpdateUserCubit({required this.getUpdateUserUseCase})
       : super((UpdateUserInitial()));
 
-  Future<void> updateUser(UserEntity user) async {
+  Future<void> updateUser(UserEntity user, String currentPassword) async {
     emit(UpdateUserLoading());
     try {
-      final resource = await getUpdateUserUseCase.call(user);
+      final resource = await getUpdateUserUseCase.call(user, currentPassword);
       if (resource.success) {
         emit(UpdateUserSuccess());
       } else {

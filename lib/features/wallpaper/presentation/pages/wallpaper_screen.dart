@@ -65,7 +65,7 @@ class _WallpaperScreenState extends State<WallpaperScreen> {
                     radius: 20, // Adjust the radius as needed
                     child: IconButton(
                       icon: Icon(
-                        Icons.arrow_upward,
+                        Icons.format_paint_outlined,
                         color: Colors.black,
                       ),
                       onPressed: () {

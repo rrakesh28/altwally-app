@@ -57,6 +57,69 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        surfaceTintColor: Colors.white,
+        backgroundColor: Colors.white,
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.pushNamed(context, SettingsScreen.routeName);
+          },
+          child: Padding(
+            padding: EdgeInsets.all(12.0),
+            child: Image.asset(
+              'assets/images/menu.png',
+              height: 20,
+            ),
+          ),
+        ),
+        title: GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AppScreen(index: 0),
+              ),
+            );
+          },
+          child: Image.asset('assets/images/name.png', height: 24),
+        ),
+        centerTitle: true,
+        actions: [
+          BlocBuilder<AuthCubit, AuthState>(
+            builder: (context, state) {
+              if (state is Authenticated) {
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AppScreen(index: 3),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    height: 50,
+                    width: 50,
+                    padding: EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                    ),
+                    child: ClipOval(
+                      child: Image.network(
+                        state.user.profileImageUrl!,
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                );
+              }
+              return Container();
+            },
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: _refresh,
         child: SafeArea(
@@ -68,59 +131,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.pushNamed(
-                                  context, SettingsScreen.routeName);
-                            },
-                            child: Image.asset(
-                              'assets/images/menu.png',
-                              height: 20,
-                            ),
-                          ),
-                          Image.asset(
-                            'assets/images/name.png',
-                            height: 30,
-                          ),
-                          BlocBuilder<AuthCubit, AuthState>(
-                            builder: (context, state) {
-                              if (state is Authenticated) {
-                                return GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const AppScreen(index: 3),
-                                      ),
-                                    );
-                                  },
-                                  child: Container(
-                                    height: 40,
-                                    width: 40,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: ClipOval(
-                                      child: Image.network(
-                                        state.user.profileImageUrl!,
-                                        width: double.infinity,
-                                        height: double.infinity,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }
-                              return Container();
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
                       const Text(
                         "Wall of the month",
                         style: TextStyle(
@@ -129,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      Container(
+                      SizedBox(
                         height: 160,
                         child: SingleChildScrollView(
                           scrollDirection: Axis.horizontal,

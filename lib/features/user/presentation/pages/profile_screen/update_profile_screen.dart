@@ -31,6 +31,8 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _currentPasswordController =
+      TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
@@ -88,7 +90,8 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       profileImage: profileImage,
     );
 
-    BlocProvider.of<UpdateUserCubit>(context).updateUser(user);
+    BlocProvider.of<UpdateUserCubit>(context)
+        .updateUser(user, _currentPasswordController.text);
   }
 
   Future<void> _cropBannerImage() async {
@@ -153,7 +156,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
         listener: (context, state) {
           if (state is UpdateUserSuccess) {
             showToast(message: "Update User Successful!!");
-            Navigator.pushNamed(context, SettingsScreen.routeName);
+            Navigator.pop(context);
           }
           if (state is UpdateUserFailed) {
             showToast(message: state.errorMessage);
@@ -371,6 +374,22 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                           height: 20,
                         ),
                         const Text(
+                          "Current Password",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        CustomTextField(
+                          controller: _currentPasswordController,
+                          hintText: 'Enter Current Password',
+                          isObscure: true,
+                          required: true,
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        const Text(
                           "Password",
                           style: TextStyle(
                             fontSize: 16,
@@ -412,11 +431,21 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(double.infinity, 50),
-                              backgroundColor: Colors.black),
-                          child: const Text(
-                            "Save",
+                            minimumSize: const Size(double.infinity, 50),
+                            backgroundColor: Colors.black,
                           ),
+                          child: state is UpdateUserLoading
+                              ? const SizedBox(
+                                  height: 30.0,
+                                  width: 30.0,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text(
+                                  "Save",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
                         ),
                         const SizedBox(
                           height: 20,

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:alt__wally/core/util/resource.dart';
 import 'package:alt__wally/features/category/data/model/category_model.dart';
@@ -70,6 +69,7 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
       final wallpapersCollection = firestore.collection("wallpapers");
       final querySnapshot =
           await wallpapersCollection.where("user_id", isEqualTo: userId).get();
+
       List<WallpaperModel> wallpapers = [];
 
       QuerySnapshot favoritesSnapshot = await firestore
@@ -82,13 +82,7 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
               (doc.data() as Map<String, dynamic>)['wallpaper_id'] as String)
           .toList();
 
-      List<DocumentSnapshot> shuffledDocs = querySnapshot.docs.toList()
-        ..shuffle();
-
-      int numUpdates = min(shuffledDocs.length, 5);
-
-      for (var i = 0; i < numUpdates; i++) {
-        var document = shuffledDocs[i];
+      for (var document in querySnapshot.docs) {
         var wallpaperData = document.data() as Map<String, dynamic>;
 
         var wallpaper = WallpaperModel(
@@ -106,7 +100,6 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
         );
 
         wallpaper.favourite = favoriteWallpaperIds.contains(wallpaper.id);
-
         wallpapers.add(wallpaper);
       }
       return Resource.success(data: wallpapers);
@@ -123,6 +116,7 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
       final querySnapshot = await wallpapersCollection
           .where("wall_of_the_month", isEqualTo: true)
           .get();
+
       List<WallpaperModel> wallpapers = [];
 
       QuerySnapshot favoritesSnapshot = await firestore
@@ -135,16 +129,7 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
               (doc.data() as Map<String, dynamic>)['wallpaper_id'] as String)
           .toList();
 
-      // Shuffle the documents
-      List<DocumentSnapshot> shuffledDocs = querySnapshot.docs.toList()
-        ..shuffle();
-
-      // Choose how many documents you want to update (e.g., 5 random documents)
-      int numUpdates = min(shuffledDocs.length,
-          5); // Update 5 random documents or less if there are fewer documents
-
-      for (var i = 0; i < numUpdates; i++) {
-        var document = shuffledDocs[i];
+      for (var document in querySnapshot.docs) {
         var wallpaperData = document.data() as Map<String, dynamic>;
 
         var wallpaper = WallpaperModel(
@@ -158,6 +143,10 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
           width: wallpaperData['width'],
         );
 
+        wallpaper.favourite = favoriteWallpaperIds.contains(wallpaper.id);
+
+        wallpapers.add(wallpaper);
+
         // // Update likes, views, and downloads counts
         // await wallpapersCollection
         //     .doc(document.id)
@@ -170,8 +159,6 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
         //     .update({'downloads': wallpaperData['downloads'] + 1});
 
         wallpaper.favourite = favoriteWallpaperIds.contains(wallpaper.id);
-
-        wallpapers.add(wallpaper);
       }
       return Resource.success(data: wallpapers);
     } catch (e) {
@@ -224,14 +211,18 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
 
       List<WallpaperModel> wallpapers = [];
 
+      QuerySnapshot categoriesSnapshot =
+          await firestore.collection("categories").get();
+
+      Map<String, dynamic> categoriesMap = {};
+      categoriesSnapshot.docs.forEach((categoryDoc) {
+        categoriesMap[categoryDoc.id] = categoryDoc.data();
+      });
+
       for (var document in wallpapersSnapshot.docs) {
         var wallpaperData = document.data() as Map<String, dynamic>;
 
-        var categorySnapshot = await firestore
-            .collection("categories")
-            .doc(wallpaperData['category_id'])
-            .get();
-        var categoryData = categorySnapshot.data();
+        var categoryData = categoriesMap[wallpaperData['category_id']];
 
         var wallpaper = WallpaperModel(
           id: document.id,
@@ -279,6 +270,10 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
               (doc.data() as Map<String, dynamic>)['wallpaper_id'] as String)
           .toList();
 
+      var categorySnapshot =
+          await firestore.collection("categories").doc(categoryId).get();
+      var categoryData = categorySnapshot.data();
+
       for (var document in querySnapshot.docs) {
         var wallpaperData = document.data();
 
@@ -291,6 +286,10 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
           size: wallpaperData['size'],
           height: wallpaperData['height'],
           width: wallpaperData['width'],
+          category: CategoryModel(
+            id: wallpaperData['category_id'],
+            name: categoryData?['name'],
+          ),
         );
 
         wallpaper.favourite = favoriteWallpaperIds.contains(wallpaper.id);
@@ -372,6 +371,14 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
 
       List<WallpaperModel> wallpapers = [];
 
+      QuerySnapshot categoriesSnapshot =
+          await firestore.collection("categories").get();
+
+      Map<String, dynamic> categoriesMap = {};
+      categoriesSnapshot.docs.forEach((categoryDoc) {
+        categoriesMap[categoryDoc.id] = categoryDoc.data();
+      });
+
       QuerySnapshot favoritesSnapshot = await firestore
           .collection('user_favourites')
           .where('user_id', isEqualTo: auth.currentUser!.uid)
@@ -385,11 +392,7 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
       for (var document in documents) {
         var wallpaperData = document.data() as Map<String, dynamic>;
 
-        var categorySnapshot = await firestore
-            .collection("categories")
-            .doc(wallpaperData['category_id'])
-            .get();
-        var categoryData = categorySnapshot.data();
+        var categoryData = categoriesMap[wallpaperData['category_id']];
 
         var wallpaper = WallpaperModel(
           id: document.id,

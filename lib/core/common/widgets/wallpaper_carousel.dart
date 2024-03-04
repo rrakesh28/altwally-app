@@ -2,9 +2,12 @@
 
 import 'package:alt__wally/common/toast.dart';
 import 'package:alt__wally/features/app/presentation/pages/app_screen.dart';
+import 'package:alt__wally/features/home/presentation/pages/home_screen.dart';
+import 'package:alt__wally/features/settings/presentation/pages/settings_screen.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_state.dart';
 import 'package:alt__wally/features/wallpaper/domain/entities/wallpaper_entity.dart';
+import 'package:alt__wally/features/wallpaper/presentation/cubit/toggle_favourite/toggle_favourite_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/pages/wallpaper_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -131,65 +134,105 @@ class _WallpaperCarouselState extends State<WallpaperCarousel> {
             right: 0,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                ElevatedButton(
-                  onPressed: () {
-                    showModalBottomSheet(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return Container(
-                          height: 200,
-                          width: double.infinity,
-                          padding: EdgeInsets.only(top: 10),
-                          child: loading
-                              ? Center(
-                                  child: CircularProgressIndicator(
-                                      color: Colors.black),
-                                )
-                              : Column(
-                                  children: [
-                                    TextButton(
-                                        onPressed: () {
-                                          _setHomeScreen(element);
-                                        },
-                                        child: Text('Home Screen')),
-                                    TextButton(
-                                        onPressed: () {
-                                          _setLockScreen(element);
-                                        },
-                                        child: Text('Lock Screen')),
-                                    TextButton(
-                                        onPressed: () {
-                                          _setBoth(element);
-                                        },
-                                        child:
-                                            Text('Home Screen + Lock Screen')),
-                                  ],
-                                ),
+                Container(
+                  height: 30,
+                  width: 65,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.all(Radius.circular(20)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        spreadRadius: 1,
+                        blurRadius: 10,
+                        offset: Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return Container(
+                              height: 200,
+                              width: double.infinity,
+                              padding: EdgeInsets.only(top: 10),
+                              child: loading
+                                  ? Center(
+                                      child: CircularProgressIndicator(
+                                          color: Colors.black),
+                                    )
+                                  : Column(
+                                      children: [
+                                        TextButton(
+                                            onPressed: () {
+                                              _setHomeScreen(element);
+                                            },
+                                            child: Text('Home Screen')),
+                                        TextButton(
+                                            onPressed: () {
+                                              _setLockScreen(element);
+                                            },
+                                            child: Text('Lock Screen')),
+                                        TextButton(
+                                            onPressed: () {
+                                              _setBoth(element);
+                                            },
+                                            child: Text(
+                                                'Home Screen + Lock Screen')),
+                                      ],
+                                    ),
+                            );
+                          },
                         );
                       },
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    textStyle: TextStyle(fontSize: 12),
-                  ),
-                  child: Text('Set As'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            WallpaperScreen(wallpaper: element!),
+                      child: Text(
+                        'Set As',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 10),
                       ),
-                    );
-                  },
-                  child: Text('View'),
-                  style: ElevatedButton.styleFrom(
-                    textStyle: TextStyle(
-                        fontSize: 12), // Adjust the font size as needed
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 24,
+                ),
+                Container(
+                  height: 30,
+                  width: 65,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.all(Radius.circular(20)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        spreadRadius: 1,
+                        blurRadius: 10,
+                        offset: Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                WallpaperScreen(wallpaper: element!),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        'View',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 10),
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -204,7 +247,29 @@ class _WallpaperCarouselState extends State<WallpaperCarousel> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Image.asset('assets/images/name.png', height: 24),
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.pushNamed(context, SettingsScreen.routeName);
+          },
+          child: Padding(
+            padding: EdgeInsets.all(12.0),
+            child: Image.asset(
+              'assets/images/menu.png',
+              height: 20,
+            ),
+          ),
+        ),
+        title: GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AppScreen(index: 0),
+              ),
+            );
+          },
+          child: Image.asset('assets/images/name.png', height: 24),
+        ),
         centerTitle: true,
         actions: [
           BlocBuilder<AuthCubit, AuthState>(
@@ -220,8 +285,9 @@ class _WallpaperCarouselState extends State<WallpaperCarousel> {
                     );
                   },
                   child: Container(
-                    height: 40,
-                    width: 40,
+                    height: 50,
+                    width: 50,
+                    padding: EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                     ),
@@ -251,37 +317,54 @@ class _WallpaperCarouselState extends State<WallpaperCarousel> {
             ),
           ),
           const SizedBox(
-            height: 40,
+            height: 20,
           ),
           Stack(
             children: [
               CarouselSlider(
-                  items: generateImageTitles(context),
-                  options: CarouselOptions(
-                      enlargeCenterPage: true,
-                      aspectRatio: 14 / 16,
-                      enableInfiniteScroll: false,
-                      initialPage: _current,
-                      viewportFraction: 0.6,
-                      onPageChanged: (index, other) {
-                        setState(() {
-                          _current = index;
-                        });
-                      }))
+                items: generateImageTitles(context),
+                options: CarouselOptions(
+                  enlargeCenterPage: true,
+                  aspectRatio: 15 / 20,
+                  initialPage: _current,
+                  viewportFraction: 0.7,
+                  enlargeFactor: 0.3,
+                  enableInfiniteScroll: true,
+                  onPageChanged: (index, other) {
+                    setState(() {
+                      _current = index;
+                    });
+                  },
+                ),
+              ),
             ],
           ),
           const SizedBox(
             height: 20,
           ),
+          Center(
+            child: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: const Icon(
+                Icons.cancel_outlined,
+                color: Colors.black45,
+              ),
+            ),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            padding: EdgeInsets.symmetric(horizontal: 60, vertical: 10),
             child: Container(
               width: double.infinity,
               decoration: BoxDecoration(
                 color: Color(0xFFD9D9D9).withOpacity(0.4),
                 borderRadius: BorderRadius.circular(50),
               ),
-              padding: EdgeInsets.symmetric(vertical: 20),
+              padding: EdgeInsets.symmetric(vertical: 5),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -289,15 +372,27 @@ class _WallpaperCarouselState extends State<WallpaperCarousel> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        widget.wallpapers[_current]?.favourite ?? false
-                            ? const Icon(
-                                Icons.favorite,
-                                color:
-                                    Colors.red, // Customize the color if needed
-                              )
-                            : const Icon(
-                                Icons.favorite_outline,
-                              ),
+                        IconButton(
+                          icon: widget.wallpapers[_current]?.favourite ?? false
+                              ? const Icon(
+                                  Icons.favorite,
+                                  color: Colors
+                                      .red, // Customize the color if needed
+                                )
+                              : const Icon(
+                                  Icons.favorite_outline,
+                                ),
+                          onPressed: () {
+                            BlocProvider.of<ToggleFavouriteWallpaperCubit>(
+                                    context)
+                                .toggle(widget.wallpapers[_current]!);
+                            setState(() {
+                              widget.wallpapers[_current]?.favourite =
+                                  !(widget.wallpapers[_current]?.favourite ??
+                                      false);
+                            });
+                          },
+                        ),
                         SizedBox(
                           width: 10,
                         ),

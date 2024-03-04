@@ -44,397 +44,381 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          title: const Text(
-            'Explore',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-          ),
-          centerTitle: true,
-          bottom: const TabBar(
-            indicatorColor: Colors.black,
-            dividerHeight: 0,
-            unselectedLabelColor: Colors.grey,
-            tabs: [
-              Tab(
-                child: Text(
-                  'New Arrivals',
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                ),
-              ),
-              Tab(
-                child: Text(
-                  'Popular',
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                ),
-              ),
-            ],
-          ), //
-        ),
-        body: RefreshIndicator(
-          onRefresh: _refresh,
-          child: SafeArea(
-            child: TabBarView(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(15.0),
-                  child: CustomScrollView(
-                    slivers: [
-                      BlocBuilder<GetRecentlyAddedWallpapersCubit,
-                          GetRecentlyAddedState>(
-                        builder: (context, state) {
-                          if (state is Loaded) {
-                            return SliverGrid(
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 8.0,
-                                mainAxisSpacing: 8.0,
-                                childAspectRatio: 0.6,
-                              ),
-                              delegate: SliverChildBuilderDelegate(
-                                (BuildContext context, int index) {
-                                  return GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              RecentlyAddedWallpapersDetailsScreen(
-                                                  index: index),
-                                        ),
-                                      );
-                                    },
-                                    child: Stack(
-                                      children: [
-                                        Container(
-                                          width: double.infinity,
-                                          clipBehavior: Clip.antiAlias,
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                          ),
-                                          child: CachedNetworkImage(
-                                            height: double.infinity,
-                                            fit: BoxFit.cover,
-                                            imageUrl: state.wallpapers[index]
-                                                    ?.imageUrl ??
-                                                '',
-                                            placeholder: (context, url) =>
-                                                const Center(
-                                              child: SizedBox(
-                                                height: 20,
-                                                width: 20,
-                                                child:
-                                                    CircularProgressIndicator(),
-                                              ),
-                                            ),
-                                            errorWidget:
-                                                (context, url, error) =>
-                                                    Container(
-                                              color: Colors.red,
-                                              child: const Center(
-                                                child: Icon(Icons.error,
-                                                    color: Colors.white),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        if (state.wallpapers[index]?.category !=
-                                            null)
-                                          Positioned(
-                                            bottom: 0,
-                                            left: 0,
-                                            right: 0,
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.black
-                                                    .withOpacity(0.5),
-                                                borderRadius:
-                                                    const BorderRadius.only(
-                                                  bottomLeft:
-                                                      Radius.circular(10),
-                                                  bottomRight:
-                                                      Radius.circular(10),
-                                                ),
-                                              ),
-                                              child: Padding(
-                                                padding: const EdgeInsets.only(
-                                                  left: 10,
-                                                  top: 5,
-                                                  right: 10,
-                                                  bottom: 5,
-                                                ),
-                                                child: Row(
-                                                  children: [
-                                                    Column(
-                                                      children: [
-                                                        Text(
-                                                          state
-                                                                  .wallpapers[
-                                                                      index]
-                                                                  ?.category
-                                                                  ?.name ??
-                                                              'Default Category',
-                                                          style:
-                                                              const TextStyle(
-                                                            color: Colors.white,
-                                                            fontSize: 12,
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                          state
-                                                                  .wallpapers[
-                                                                      index]
-                                                                  ?.title ??
-                                                              'Default Title',
-                                                          style:
-                                                              const TextStyle(
-                                                            color: Colors.white,
-                                                            fontSize: 16,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    const Spacer(),
-                                                    IconButton(
-                                                      icon: state
-                                                                  .wallpapers[
-                                                                      index]
-                                                                  ?.favourite ??
-                                                              false
-                                                          ? const Icon(
-                                                              Icons.favorite,
-                                                              color: Colors.red,
-                                                            )
-                                                          : const Icon(
-                                                              Icons
-                                                                  .favorite_outline,
-                                                              color:
-                                                                  Colors.white),
-                                                      onPressed: () {
-                                                        BlocProvider.of<
-                                                                    ToggleFavouriteWallpaperCubit>(
-                                                                context)
-                                                            .toggle(state
-                                                                    .wallpapers[
-                                                                index]!);
-
-                                                        setState(() {
-                                                          state
-                                                              .wallpapers[index]
-                                                              ?.favourite = !(state
-                                                                  .wallpapers[
-                                                                      index]
-                                                                  ?.favourite ??
-                                                              false);
-                                                        });
-                                                      },
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                                childCount: state.wallpapers.length,
-                              ),
-                            );
-                          }
-                          return SliverToBoxAdapter(child: Container());
-                        },
-                      ),
-                    ],
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      child: DefaultTabController(
+        length: 2,
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            title: const Text(
+              'Explore',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+            centerTitle: true,
+            bottom: const TabBar(
+              indicatorColor: Colors.black,
+              dividerHeight: 0,
+              unselectedLabelColor: Colors.grey,
+              tabs: [
+                Tab(
+                  child: Text(
+                    'New Arrivals',
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(15.0),
-                  child: CustomScrollView(
-                    slivers: [
-                      BlocBuilder<GetPopularWallpapersCubit,
-                          GetPopularWallpapersState>(
-                        builder: (context, state) {
-                          if (state is PopularLoaded) {
-                            return SliverGrid(
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 8.0,
-                                mainAxisSpacing: 8.0,
-                                childAspectRatio: 0.6,
-                              ),
-                              delegate: SliverChildBuilderDelegate(
-                                (BuildContext context, int index) {
-                                  return GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              PopularWallpapersDetailsScreen(
-                                                  index: index),
-                                        ),
-                                      );
-                                    },
-                                    child: Stack(
-                                      children: [
-                                        Container(
-                                          width: double.infinity,
-                                          clipBehavior: Clip.antiAlias,
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                          ),
-                                          child: CachedNetworkImage(
-                                            height: double.infinity,
-                                            fit: BoxFit.cover,
-                                            imageUrl: state.wallpapers[index]
-                                                    ?.imageUrl ??
-                                                '',
-                                            placeholder: (context, url) =>
-                                                const Center(
-                                              child: SizedBox(
-                                                height: 20,
-                                                width: 20,
-                                                child:
-                                                    CircularProgressIndicator(),
-                                              ),
-                                            ),
-                                            errorWidget:
-                                                (context, url, error) =>
-                                                    Container(
-                                              color: Colors.red,
-                                              child: const Center(
-                                                child: Icon(Icons.error,
-                                                    color: Colors.white),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        if (state.wallpapers[index]?.category !=
-                                            null)
-                                          Positioned(
-                                            bottom: 0,
-                                            left: 0,
-                                            right: 0,
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.black
-                                                    .withOpacity(0.5),
-                                                borderRadius:
-                                                    const BorderRadius.only(
-                                                  bottomLeft:
-                                                      Radius.circular(10),
-                                                  bottomRight:
-                                                      Radius.circular(10),
-                                                ),
-                                              ),
-                                              child: Padding(
-                                                padding: const EdgeInsets.only(
-                                                  left: 10,
-                                                  top: 5,
-                                                  right: 10,
-                                                  bottom: 5,
-                                                ),
-                                                child: Row(
-                                                  children: [
-                                                    Column(
-                                                      children: [
-                                                        Text(
-                                                          state
-                                                                  .wallpapers[
-                                                                      index]
-                                                                  ?.category
-                                                                  ?.name ??
-                                                              'Default Category',
-                                                          style:
-                                                              const TextStyle(
-                                                            color: Colors.white,
-                                                            fontSize: 12,
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                          state
-                                                                  .wallpapers[
-                                                                      index]
-                                                                  ?.title ??
-                                                              'Default Title',
-                                                          style:
-                                                              const TextStyle(
-                                                            color: Colors.white,
-                                                            fontSize: 16,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    const Spacer(),
-                                                    IconButton(
-                                                      icon: state
-                                                                  .wallpapers[
-                                                                      index]
-                                                                  ?.favourite ??
-                                                              false
-                                                          ? const Icon(
-                                                              Icons.favorite,
-                                                              color: Colors.red,
-                                                            )
-                                                          : const Icon(
-                                                              Icons
-                                                                  .favorite_outline,
-                                                              color:
-                                                                  Colors.white),
-                                                      onPressed: () {
-                                                        BlocProvider.of<
-                                                                    ToggleFavouriteWallpaperCubit>(
-                                                                context)
-                                                            .toggle(state
-                                                                    .wallpapers[
-                                                                index]!);
-
-                                                        setState(() {
-                                                          state
-                                                              .wallpapers[index]
-                                                              ?.favourite = !(state
-                                                                  .wallpapers[
-                                                                      index]
-                                                                  ?.favourite ??
-                                                              false);
-                                                        });
-                                                      },
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                                childCount: state.wallpapers.length,
-                              ),
-                            );
-                          }
-                          return SliverToBoxAdapter(child: Container());
-                        },
-                      ),
-                    ],
+                Tab(
+                  child: Text(
+                    'Popular',
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black),
                   ),
                 ),
               ],
-            ), // ,
+            ), //
+          ),
+          body: TabBarView(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: CustomScrollView(
+                  slivers: [
+                    BlocBuilder<GetRecentlyAddedWallpapersCubit,
+                        GetRecentlyAddedState>(
+                      builder: (context, state) {
+                        if (state is Loaded) {
+                          return SliverGrid(
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 8.0,
+                              mainAxisSpacing: 8.0,
+                              childAspectRatio: 0.6,
+                            ),
+                            delegate: SliverChildBuilderDelegate(
+                              (BuildContext context, int index) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            RecentlyAddedWallpapersDetailsScreen(
+                                                index: index),
+                                      ),
+                                    );
+                                  },
+                                  child: Stack(
+                                    children: [
+                                      Container(
+                                        width: double.infinity,
+                                        clipBehavior: Clip.antiAlias,
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        child: CachedNetworkImage(
+                                          height: double.infinity,
+                                          fit: BoxFit.cover,
+                                          imageUrl: state.wallpapers[index]
+                                                  ?.imageUrl ??
+                                              '',
+                                          placeholder: (context, url) =>
+                                              const Center(
+                                            child: SizedBox(
+                                              height: 20,
+                                              width: 20,
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            ),
+                                          ),
+                                          errorWidget: (context, url, error) =>
+                                              Container(
+                                            color: Colors.red,
+                                            child: const Center(
+                                              child: Icon(Icons.error,
+                                                  color: Colors.white),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      if (state.wallpapers[index]?.category !=
+                                          null)
+                                        Positioned(
+                                          bottom: 0,
+                                          left: 0,
+                                          right: 0,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  Colors.black.withOpacity(0.5),
+                                              borderRadius:
+                                                  const BorderRadius.only(
+                                                bottomLeft: Radius.circular(10),
+                                                bottomRight:
+                                                    Radius.circular(10),
+                                              ),
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(
+                                                left: 10,
+                                                top: 5,
+                                                right: 10,
+                                                bottom: 5,
+                                              ),
+                                              child: Row(
+                                                children: [
+                                                  Column(
+                                                    children: [
+                                                      Text(
+                                                        state
+                                                                .wallpapers[
+                                                                    index]
+                                                                ?.category
+                                                                ?.name ??
+                                                            'Default Category',
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 12,
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        state.wallpapers[index]
+                                                                ?.title ??
+                                                            'Default Title',
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 16,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const Spacer(),
+                                                  IconButton(
+                                                    icon: state
+                                                                .wallpapers[
+                                                                    index]
+                                                                ?.favourite ??
+                                                            false
+                                                        ? const Icon(
+                                                            Icons.favorite,
+                                                            color: Colors.red,
+                                                          )
+                                                        : const Icon(
+                                                            Icons
+                                                                .favorite_outline,
+                                                            color:
+                                                                Colors.white),
+                                                    onPressed: () {
+                                                      BlocProvider.of<
+                                                                  ToggleFavouriteWallpaperCubit>(
+                                                              context)
+                                                          .toggle(
+                                                              state.wallpapers[
+                                                                  index]!);
+
+                                                      setState(() {
+                                                        state.wallpapers[index]
+                                                            ?.favourite = !(state
+                                                                .wallpapers[
+                                                                    index]
+                                                                ?.favourite ??
+                                                            false);
+                                                      });
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                );
+                              },
+                              childCount: state.wallpapers.length,
+                            ),
+                          );
+                        }
+                        return SliverToBoxAdapter(child: Container());
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: CustomScrollView(
+                  slivers: [
+                    BlocBuilder<GetPopularWallpapersCubit,
+                        GetPopularWallpapersState>(
+                      builder: (context, state) {
+                        if (state is PopularLoaded) {
+                          return SliverGrid(
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 8.0,
+                              mainAxisSpacing: 8.0,
+                              childAspectRatio: 0.6,
+                            ),
+                            delegate: SliverChildBuilderDelegate(
+                              (BuildContext context, int index) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            PopularWallpapersDetailsScreen(
+                                                index: index),
+                                      ),
+                                    );
+                                  },
+                                  child: Stack(
+                                    children: [
+                                      Container(
+                                        width: double.infinity,
+                                        clipBehavior: Clip.antiAlias,
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        child: CachedNetworkImage(
+                                          height: double.infinity,
+                                          fit: BoxFit.cover,
+                                          imageUrl: state.wallpapers[index]
+                                                  ?.imageUrl ??
+                                              '',
+                                          placeholder: (context, url) =>
+                                              const Center(
+                                            child: SizedBox(
+                                              height: 20,
+                                              width: 20,
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            ),
+                                          ),
+                                          errorWidget: (context, url, error) =>
+                                              Container(
+                                            color: Colors.red,
+                                            child: const Center(
+                                              child: Icon(Icons.error,
+                                                  color: Colors.white),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      if (state.wallpapers[index]?.category !=
+                                          null)
+                                        Positioned(
+                                          bottom: 0,
+                                          left: 0,
+                                          right: 0,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  Colors.black.withOpacity(0.5),
+                                              borderRadius:
+                                                  const BorderRadius.only(
+                                                bottomLeft: Radius.circular(10),
+                                                bottomRight:
+                                                    Radius.circular(10),
+                                              ),
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(
+                                                left: 10,
+                                                top: 5,
+                                                right: 10,
+                                                bottom: 5,
+                                              ),
+                                              child: Row(
+                                                children: [
+                                                  Column(
+                                                    children: [
+                                                      Text(
+                                                        state
+                                                                .wallpapers[
+                                                                    index]
+                                                                ?.category
+                                                                ?.name ??
+                                                            'Default Category',
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 12,
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        state.wallpapers[index]
+                                                                ?.title ??
+                                                            'Default Title',
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 16,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const Spacer(),
+                                                  IconButton(
+                                                    icon: state
+                                                                .wallpapers[
+                                                                    index]
+                                                                ?.favourite ??
+                                                            false
+                                                        ? const Icon(
+                                                            Icons.favorite,
+                                                            color: Colors.red,
+                                                          )
+                                                        : const Icon(
+                                                            Icons
+                                                                .favorite_outline,
+                                                            color:
+                                                                Colors.white),
+                                                    onPressed: () {
+                                                      BlocProvider.of<
+                                                                  ToggleFavouriteWallpaperCubit>(
+                                                              context)
+                                                          .toggle(
+                                                              state.wallpapers[
+                                                                  index]!);
+
+                                                      setState(() {
+                                                        state.wallpapers[index]
+                                                            ?.favourite = !(state
+                                                                .wallpapers[
+                                                                    index]
+                                                                ?.favourite ??
+                                                            false);
+                                                      });
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                );
+                              },
+                              childCount: state.wallpapers.length,
+                            ),
+                          );
+                        }
+                        return SliverToBoxAdapter(child: Container());
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

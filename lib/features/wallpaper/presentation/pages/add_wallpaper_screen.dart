@@ -26,8 +26,6 @@ class AddWallpaperScreen extends StatefulWidget {
 class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
   File? file;
 
-  bool _uploading = false;
-
   final TextEditingController _nameController = TextEditingController();
   String _category = "";
   int _fileSize = 0;
@@ -95,9 +93,6 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
   }
 
   void submit(BuildContext context) async {
-    setState(() {
-      _uploading = true;
-    });
     try {
       validateInput();
 
@@ -114,10 +109,6 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
     } catch (e) {
       showToast(message: "Error: $e");
     }
-
-    setState(() {
-      _uploading = false;
-    });
   }
 
   void validateInput() {

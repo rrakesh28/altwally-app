@@ -91,19 +91,7 @@ class MyApp extends StatelessWidget {
           return MaterialApp(
             title: 'Alt Wally',
             theme: ThemeData(
-              colorScheme: const ColorScheme(
-                primary: Colors.black,
-                secondary: Colors.white,
-                surface: Colors.white,
-                background: Colors.white,
-                error: Colors.white,
-                onPrimary: Colors.white,
-                onSecondary: Colors.black,
-                onSurface: Colors.black,
-                onBackground: Colors.black,
-                onError: Colors.black,
-                brightness: Brightness.light,
-              ),
+              colorScheme: lightDynamic,
               useMaterial3: true,
               textTheme: GoogleFonts.hindTextTheme(),
             ),

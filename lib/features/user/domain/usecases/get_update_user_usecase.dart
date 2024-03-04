@@ -7,7 +7,7 @@ class GetUpdateUserUseCase {
 
   GetUpdateUserUseCase({required this.repository});
 
-  Future<Resource> call(UserEntity user) {
-    return repository.getUpdateUser(user);
+  Future<Resource> call(UserEntity user, String currentPassword) {
+    return repository.getUpdateUser(user, currentPassword);
   }
 }
