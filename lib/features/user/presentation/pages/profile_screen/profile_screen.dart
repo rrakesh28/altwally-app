@@ -266,6 +266,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: Colors.black,
               ),
             ),
+            SizedBox(height: 60),
           ],
         ),
       ),

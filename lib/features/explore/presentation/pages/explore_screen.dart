@@ -1,3 +1,4 @@
+import 'package:alt__wally/features/wallpaper/domain/entities/wallpaper_entity.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/popular_wallpapers/popular_wallpapers_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/popular_wallpapers/popular_wallpapers_state.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/recently_added/recently_added_cubit.dart';
@@ -32,14 +33,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
       BlocProvider.of<GetRecentlyAddedWallpapersCubit>(context).fetchData();
     }
 
-    if (popularState is PopularInitial || popularState is PopularFailed) {
-      BlocProvider.of<GetPopularWallpapersCubit>(context).fetchData();
-    }
+    // if (popularState is PopularInitial || popularState is PopularFailed) {
+    //   BlocProvider.of<GetPopularWallpapersCubit>(context).fetchData(context);
+    // }
   }
 
   Future<void> _refresh() async {
     BlocProvider.of<GetRecentlyAddedWallpapersCubit>(context).fetchData();
-    BlocProvider.of<GetPopularWallpapersCubit>(context).fetchData();
+    // BlocProvider.of<GetPopularWallpapersCubit>(context).fetchData(context);
   }
 
   @override
@@ -172,33 +173,48 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                                 bottom: 5,
                                               ),
                                               child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
-                                                  Column(
-                                                    children: [
-                                                      Text(
-                                                        state
-                                                                .wallpapers[
-                                                                    index]
-                                                                ?.category
-                                                                ?.name ??
-                                                            'Default Category',
-                                                        style: const TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: 12,
+                                                  Expanded(
+                                                    // Added Expanded widget
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          state
+                                                                  .wallpapers[
+                                                                      index]
+                                                                  ?.category
+                                                                  ?.name ??
+                                                              'Default Category',
+                                                          style:
+                                                              const TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 12,
+                                                          ),
                                                         ),
-                                                      ),
-                                                      Text(
-                                                        state.wallpapers[index]
-                                                                ?.title ??
-                                                            'Default Title',
-                                                        style: const TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: 16,
+                                                        Text(
+                                                          state
+                                                                  .wallpapers[
+                                                                      index]
+                                                                  ?.title ??
+                                                              'Default Title',
+                                                          style:
+                                                              const TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 16,
+                                                          ),
+                                                          overflow: TextOverflow
+                                                              .ellipsis, // Added overflow property
                                                         ),
-                                                      ),
-                                                    ],
+                                                      ],
+                                                    ),
                                                   ),
-                                                  const Spacer(),
                                                   IconButton(
                                                     icon: state
                                                                 .wallpapers[
@@ -207,13 +223,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                                             false
                                                         ? const Icon(
                                                             Icons.favorite,
-                                                            color: Colors.red,
+                                                            color: Colors
+                                                                .red, // Customize the color if needed
                                                           )
                                                         : const Icon(
                                                             Icons
                                                                 .favorite_outline,
-                                                            color:
-                                                                Colors.white),
+                                                            color: Colors.white,
+                                                          ),
                                                     onPressed: () {
                                                       BlocProvider.of<
                                                                   ToggleFavouriteWallpaperCubit>(
@@ -221,7 +238,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                                           .toggle(
                                                               state.wallpapers[
                                                                   index]!);
-
                                                       setState(() {
                                                         state.wallpapers[index]
                                                             ?.favourite = !(state
@@ -231,7 +247,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                                             false);
                                                       });
                                                     },
-                                                  ),
+                                                  )
                                                 ],
                                               ),
                                             ),
@@ -255,10 +271,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 padding: const EdgeInsets.all(15.0),
                 child: CustomScrollView(
                   slivers: [
-                    BlocBuilder<GetPopularWallpapersCubit,
-                        GetPopularWallpapersState>(
+                    BlocBuilder<GetRecentlyAddedWallpapersCubit,
+                        GetRecentlyAddedState>(
                       builder: (context, state) {
-                        if (state is PopularLoaded) {
+                        if (state is Loaded) {
+                          // Shuffle the wallpapers list
+                          List<WallpaperEntity> shuffledWallpapers =
+                              List.from(state.wallpapers)..shuffle();
+
                           return SliverGrid(
                             gridDelegate:
                                 const SliverGridDelegateWithFixedCrossAxisCount(
@@ -275,7 +295,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) =>
-                                            PopularWallpapersDetailsScreen(
+                                            RecentlyAddedWallpapersDetailsScreen(
                                                 index: index),
                                       ),
                                     );
@@ -292,7 +312,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                         child: CachedNetworkImage(
                                           height: double.infinity,
                                           fit: BoxFit.cover,
-                                          imageUrl: state.wallpapers[index]
+                                          imageUrl: shuffledWallpapers[index]
                                                   ?.imageUrl ??
                                               '',
                                           placeholder: (context, url) =>
@@ -314,7 +334,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                           ),
                                         ),
                                       ),
-                                      if (state.wallpapers[index]?.category !=
+                                      if (shuffledWallpapers[index]?.category !=
                                           null)
                                         Positioned(
                                           bottom: 0,
@@ -339,36 +359,47 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                                 bottom: 5,
                                               ),
                                               child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
-                                                  Column(
-                                                    children: [
-                                                      Text(
-                                                        state
-                                                                .wallpapers[
-                                                                    index]
-                                                                ?.category
-                                                                ?.name ??
-                                                            'Default Category',
-                                                        style: const TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: 12,
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          shuffledWallpapers[
+                                                                      index]
+                                                                  ?.category
+                                                                  ?.name ??
+                                                              'Default Category',
+                                                          style:
+                                                              const TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 12,
+                                                          ),
                                                         ),
-                                                      ),
-                                                      Text(
-                                                        state.wallpapers[index]
-                                                                ?.title ??
-                                                            'Default Title',
-                                                        style: const TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: 16,
+                                                        Text(
+                                                          shuffledWallpapers[
+                                                                      index]
+                                                                  ?.title ??
+                                                              'Default Title',
+                                                          style:
+                                                              const TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 16,
+                                                          ),
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
                                                         ),
-                                                      ),
-                                                    ],
+                                                      ],
+                                                    ),
                                                   ),
-                                                  const Spacer(),
                                                   IconButton(
-                                                    icon: state
-                                                                .wallpapers[
+                                                    icon: shuffledWallpapers[
                                                                     index]
                                                                 ?.favourite ??
                                                             false
@@ -379,26 +410,26 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                                         : const Icon(
                                                             Icons
                                                                 .favorite_outline,
-                                                            color:
-                                                                Colors.white),
+                                                            color: Colors.white,
+                                                          ),
                                                     onPressed: () {
                                                       BlocProvider.of<
                                                                   ToggleFavouriteWallpaperCubit>(
                                                               context)
                                                           .toggle(
-                                                              state.wallpapers[
+                                                              shuffledWallpapers[
                                                                   index]!);
-
                                                       setState(() {
-                                                        state.wallpapers[index]
-                                                            ?.favourite = !(state
-                                                                .wallpapers[
+                                                        shuffledWallpapers[
                                                                     index]
-                                                                ?.favourite ??
-                                                            false);
+                                                                ?.favourite =
+                                                            !(shuffledWallpapers[
+                                                                        index]
+                                                                    ?.favourite ??
+                                                                false);
                                                       });
                                                     },
-                                                  ),
+                                                  )
                                                 ],
                                               ),
                                             ),
@@ -408,13 +439,189 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                   ),
                                 );
                               },
-                              childCount: state.wallpapers.length,
+                              childCount: shuffledWallpapers.length,
                             ),
                           );
                         }
                         return SliverToBoxAdapter(child: Container());
                       },
                     ),
+
+                    // BlocBuilder<GetPopularWallpapersCubit,
+                    //     GetPopularWallpapersState>(
+                    //   builder: (context, state) {
+                    //     if (state is PopularLoaded) {
+                    //       return SliverGrid(
+                    //         gridDelegate:
+                    //             const SliverGridDelegateWithFixedCrossAxisCount(
+                    //           crossAxisCount: 2,
+                    //           crossAxisSpacing: 8.0,
+                    //           mainAxisSpacing: 8.0,
+                    //           childAspectRatio: 0.6,
+                    //         ),
+                    //         delegate: SliverChildBuilderDelegate(
+                    //           (BuildContext context, int index) {
+                    //             return GestureDetector(
+                    //               onTap: () {
+                    //                 Navigator.push(
+                    //                   context,
+                    //                   MaterialPageRoute(
+                    //                     builder: (context) =>
+                    //                         PopularWallpapersDetailsScreen(
+                    //                             index: index),
+                    //                   ),
+                    //                 );
+                    //               },
+                    //               child: Stack(
+                    //                 children: [
+                    //                   Container(
+                    //                     width: double.infinity,
+                    //                     clipBehavior: Clip.antiAlias,
+                    //                     decoration: BoxDecoration(
+                    //                       borderRadius:
+                    //                           BorderRadius.circular(10),
+                    //                     ),
+                    //                     child: CachedNetworkImage(
+                    //                       height: double.infinity,
+                    //                       fit: BoxFit.cover,
+                    //                       imageUrl: state.wallpapers[index]
+                    //                               ?.imageUrl ??
+                    //                           '',
+                    //                       placeholder: (context, url) =>
+                    //                           const Center(
+                    //                         child: SizedBox(
+                    //                           height: 20,
+                    //                           width: 20,
+                    //                           child:
+                    //                               CircularProgressIndicator(),
+                    //                         ),
+                    //                       ),
+                    //                       errorWidget: (context, url, error) =>
+                    //                           Container(
+                    //                         color: Colors.red,
+                    //                         child: const Center(
+                    //                           child: Icon(Icons.error,
+                    //                               color: Colors.white),
+                    //                         ),
+                    //                       ),
+                    //                     ),
+                    //                   ),
+                    //                   if (state.wallpapers[index]?.category !=
+                    //                       null)
+                    //                     Positioned(
+                    //                       bottom: 0,
+                    //                       left: 0,
+                    //                       right: 0,
+                    //                       child: Container(
+                    //                         decoration: BoxDecoration(
+                    //                           color:
+                    //                               Colors.black.withOpacity(0.5),
+                    //                           borderRadius:
+                    //                               const BorderRadius.only(
+                    //                             bottomLeft: Radius.circular(10),
+                    //                             bottomRight:
+                    //                                 Radius.circular(10),
+                    //                           ),
+                    //                         ),
+                    //                         child: Padding(
+                    //                           padding: const EdgeInsets.only(
+                    //                             left: 10,
+                    //                             top: 5,
+                    //                             right: 10,
+                    //                             bottom: 5,
+                    //                           ),
+                    //                           child: Row(
+                    //                             mainAxisAlignment:
+                    //                                 MainAxisAlignment.start,
+                    //                             crossAxisAlignment:
+                    //                                 CrossAxisAlignment.start,
+                    //                             children: [
+                    //                               Expanded(
+                    //                                 // Added Expanded widget
+                    //                                 child: Column(
+                    //                                   crossAxisAlignment:
+                    //                                       CrossAxisAlignment
+                    //                                           .start,
+                    //                                   children: [
+                    //                                     Text(
+                    //                                       state
+                    //                                               .wallpapers[
+                    //                                                   index]
+                    //                                               ?.category
+                    //                                               ?.name ??
+                    //                                           'Default Category',
+                    //                                       style:
+                    //                                           const TextStyle(
+                    //                                         color: Colors.white,
+                    //                                         fontSize: 12,
+                    //                                       ),
+                    //                                     ),
+                    //                                     Text(
+                    //                                       state
+                    //                                               .wallpapers[
+                    //                                                   index]
+                    //                                               ?.title ??
+                    //                                           'Default Title',
+                    //                                       style:
+                    //                                           const TextStyle(
+                    //                                         color: Colors.white,
+                    //                                         fontSize: 16,
+                    //                                       ),
+                    //                                       overflow: TextOverflow
+                    //                                           .ellipsis, // Added overflow property
+                    //                                     ),
+                    //                                   ],
+                    //                                 ),
+                    //                               ),
+                    //                               IconButton(
+                    //                                 icon: state
+                    //                                             .wallpapers[
+                    //                                                 index]
+                    //                                             ?.favourite ??
+                    //                                         false
+                    //                                     ? const Icon(
+                    //                                         Icons.favorite,
+                    //                                         color: Colors
+                    //                                             .red, // Customize the color if needed
+                    //                                       )
+                    //                                     : const Icon(
+                    //                                         Icons
+                    //                                             .favorite_outline,
+                    //                                         color: Colors.white,
+                    //                                       ),
+                    //                                 onPressed: () {
+                    //                                   BlocProvider.of<
+                    //                                               ToggleFavouriteWallpaperCubit>(
+                    //                                           context)
+                    //                                       .toggle(
+                    //                                           state.wallpapers[
+                    //                                               index]!);
+                    //                                   setState(() {
+                    //                                     state.wallpapers[index]
+                    //                                         ?.favourite = !(state
+                    //                                             .wallpapers[
+                    //                                                 index]
+                    //                                             ?.favourite ??
+                    //                                         false);
+                    //                                   });
+                    //                                 },
+                    //                               )
+                    //                             ],
+                    //                           ),
+                    //                         ),
+                    //                       ),
+                    //                     ),
+                    //                 ],
+                    //               ),
+                    //             );
+                    //           },
+                    //           childCount: state.wallpapers.length,
+                    //         ),
+                    //       );
+                    //     }
+                    //     return SliverToBoxAdapter(child: Container());
+                    //   },
+                    // ),
                   ],
                 ),
               ),

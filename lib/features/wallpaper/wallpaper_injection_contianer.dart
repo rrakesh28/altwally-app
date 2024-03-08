@@ -30,8 +30,9 @@ Future<void> wallpaperInjectionContainer() async {
           toggleFavouriteWallpapersUseCase: sl.call()));
   sl.registerFactory<GetRecentlyAddedWallpapersCubit>(() =>
       GetRecentlyAddedWallpapersCubit(getRecentlyAddedUseCase: sl.call()));
-  sl.registerFactory<GetPopularWallpapersCubit>(
-      () => GetPopularWallpapersCubit(getPopularWallpapersUseCase: sl.call()));
+  sl.registerFactory<GetPopularWallpapersCubit>(() => GetPopularWallpapersCubit(
+      getPopularWallpapersUseCase: sl.call(),
+      getRecentlyAddedWallpapersCubit: sl.call()));
   sl.registerFactory<GetCategoryWallpapersCubit>(() =>
       GetCategoryWallpapersCubit(getCategoryWallpapersUseCase: sl.call()));
 

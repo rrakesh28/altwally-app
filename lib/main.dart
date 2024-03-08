@@ -93,7 +93,7 @@ class MyApp extends StatelessWidget {
             theme: ThemeData(
               colorScheme: lightDynamic,
               useMaterial3: true,
-              textTheme: GoogleFonts.hindTextTheme(),
+              textTheme: GoogleFonts.interTextTheme(),
             ),
             debugShowCheckedModeBanner: false,
             initialRoute: '/',

@@ -130,56 +130,73 @@ class _FavouriteWallpapersScreenState extends State<FavouriteWallpapersScreen> {
                                               top: 5,
                                               right: 10,
                                               bottom: 5),
-                                          child: Row(children: [
-                                            Column(
-                                              children: [
-                                                Text(
-                                                  state.wallpapers[index]
-                                                          ?.category?.name ??
-                                                      'Default Category',
-                                                  style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 12),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Expanded(
+                                                // Added Expanded widget
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      state
+                                                              .wallpapers[index]
+                                                              ?.category
+                                                              ?.name ??
+                                                          'Default Category',
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      state.wallpapers[index]
+                                                              ?.title ??
+                                                          'Default Title',
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 16,
+                                                      ),
+                                                      overflow: TextOverflow
+                                                          .ellipsis, // Added overflow property
+                                                    ),
+                                                  ],
                                                 ),
-                                                Text(
-                                                  state.wallpapers[index]!
-                                                          .title ??
-                                                      'Default Title',
-                                                  style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 16),
-                                                ),
-                                              ],
-                                            ),
-                                            const Spacer(),
-                                            IconButton(
-                                              icon: state.wallpapers[index]
-                                                          ?.favourite ??
-                                                      false
-                                                  ? const Icon(
-                                                      Icons.favorite,
-                                                      color: Colors
-                                                          .red, // Customize the color if needed
-                                                    )
-                                                  : const Icon(
-                                                      Icons.favorite_outline,
-                                                      color: Colors.white),
-                                              onPressed: () {
-                                                BlocProvider.of<
-                                                            ToggleFavouriteWallpaperCubit>(
-                                                        context)
-                                                    .toggle(state
-                                                        .wallpapers[index]!);
-                                                setState(() {
-                                                  state.wallpapers[index]
-                                                      ?.favourite = !(state
-                                                          .wallpapers[index]
-                                                          ?.favourite ??
-                                                      false);
-                                                });
-                                              },
-                                            )
-                                          ]),
+                                              ),
+                                              IconButton(
+                                                icon: state.wallpapers[index]
+                                                            ?.favourite ??
+                                                        false
+                                                    ? const Icon(
+                                                        Icons.favorite,
+                                                        color: Colors
+                                                            .red, // Customize the color if needed
+                                                      )
+                                                    : const Icon(
+                                                        Icons.favorite_outline,
+                                                        color: Colors.white,
+                                                      ),
+                                                onPressed: () {
+                                                  BlocProvider.of<
+                                                              ToggleFavouriteWallpaperCubit>(
+                                                          context)
+                                                      .toggle(state
+                                                          .wallpapers[index]!);
+                                                  setState(() {
+                                                    state.wallpapers[index]
+                                                        ?.favourite = !(state
+                                                            .wallpapers[index]
+                                                            ?.favourite ??
+                                                        false);
+                                                  });
+                                                },
+                                              )
+                                            ],
+                                          ),
                                         ),
                                       ), // Replace YourWidget with your desired content
                                     ),
