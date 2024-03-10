@@ -1,9 +1,12 @@
+import 'package:alt__wally/core/common/widgets/wallpaper_card.dart';
 import 'package:alt__wally/features/settings/presentation/pages/settings_screen.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_state.dart';
 import 'package:alt__wally/features/user/presentation/cubit/profile/profile_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/profile/profile_state.dart';
 import 'package:alt__wally/features/wallpaper/domain/entities/wallpaper_entity.dart';
+import 'package:alt__wally/features/wallpaper/presentation/cubit/recently_added/recently_added_cubit.dart';
+import 'package:alt__wally/features/wallpaper/presentation/cubit/recently_added/recently_added_state.dart';
 import 'package:alt__wally/features/wallpaper/presentation/pages/add_wallpaper_screen.dart';
 import 'package:alt__wally/features/wallpaper/presentation/pages/profile_wallpapers_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -20,6 +23,8 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   List<WallpaperEntity?> wallpapersData = [];
+
+  String? userId;
 
   @override
   void initState() {
@@ -56,32 +61,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
             height: double.infinity,
             child: Stack(
               children: [
-                BlocBuilder<AuthCubit, AuthState>(builder: (context, state) {
-                  if (state is Authenticated) {
-                    return CachedNetworkImage(
-                      height: 200,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      imageUrl: state.user.bannerImageUrl!,
-                      placeholder: (context, url) => const Center(
-                        child: SizedBox(
+                BlocBuilder<AuthCubit, AuthState>(
+                  builder: (context, state) {
+                    if (state is Authenticated) {
+                      userId = state.user.uid!;
+
+                      return CachedNetworkImage(
+                        height: 200,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        imageUrl: state.user.bannerImageUrl!,
+                        placeholder: (context, url) => const Center(
+                          child: SizedBox(
                             height: 20,
                             width: 20,
-                            child: CircularProgressIndicator()),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        color: Colors
-                            .red, // Change this to the desired error background color
-                        child: const Center(
-                          child: Icon(Icons.error, color: Colors.white),
+                            child: CircularProgressIndicator(),
+                          ),
                         ),
-                      ),
-                    );
-                    // return Image.network(state.user.bannerImageUrl!,
-                    //     height: 200, width: double.infinity, fit: BoxFit.cover);
-                  }
-                  return Container();
-                }),
+                        errorWidget: (context, url, error) => Container(
+                          color: Colors.red,
+                          child: const Center(
+                            child: Icon(Icons.error, color: Colors.white),
+                          ),
+                        ),
+                      );
+                    }
+                    return Container();
+                  },
+                ),
                 Positioned(
                     top: 120,
                     left: 0,
@@ -173,72 +180,90 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             child: Padding(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 10, vertical: 10),
-                                child: BlocConsumer<ProfileCubit, ProfileState>(
+                                child: BlocConsumer<
+                                        GetRecentlyAddedWallpapersCubit,
+                                        GetRecentlyAddedState>(
                                     listener: (context, state) {},
                                     builder: (context, state) {
-                                      if (state is ProfileInitial) {
+                                      if (state is Initial) {
                                         return const Center(
                                             child: CircularProgressIndicator());
-                                      } else if (state is ProfileLoaded) {
+                                      } else if (state is Loaded) {
+                                        if (state.wallpapers
+                                            .where((wallpaper) =>
+                                                wallpaper?.favourite == true)
+                                            .isEmpty) {
+                                          return Center(
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Image.asset(
+                                                  'assets/images/empty-add-wallpapers.png',
+                                                  height: 70,
+                                                ),
+                                                const SizedBox(
+                                                  height: 20,
+                                                ),
+                                                const Padding(
+                                                  padding: EdgeInsets.only(
+                                                      left: 20.0, right: 20.0),
+                                                  child: Text(
+                                                    "Hey! Let's make this space pop with your favorite walls!",
+                                                    textAlign: TextAlign.center,
+                                                    style: TextStyle(
+                                                        fontSize: 15,
+                                                        color: Color.fromRGBO(
+                                                            0, 0, 0, 0.3),
+                                                        fontWeight:
+                                                            FontWeight.w600),
+                                                  ),
+                                                )
+                                              ],
+                                            ),
+                                          );
+                                        }
                                         return GridView.builder(
                                           gridDelegate:
                                               const SliverGridDelegateWithFixedCrossAxisCount(
                                             crossAxisCount: 2,
-                                            crossAxisSpacing: 16,
-                                            mainAxisSpacing: 15,
-                                            childAspectRatio: 0.7,
+                                            crossAxisSpacing: 8.0,
+                                            mainAxisSpacing: 8.0,
+                                            childAspectRatio: 0.6,
                                           ),
-                                          itemCount: state.wallpapers.length,
+                                          itemCount: state.wallpapers
+                                              .where((wallpaper) =>
+                                                  wallpaper?.userId == userId)
+                                              .length,
                                           itemBuilder: (context, index) {
-                                            WallpaperEntity wallpaper =
-                                                state.wallpapers[index]!;
-                                            return GestureDetector(
+                                            final filteredWallpapers = state
+                                                .wallpapers
+                                                .where((wallpaper) =>
+                                                    wallpaper?.userId == userId)
+                                                .toList();
+
+                                            return WallpaperItem(
+                                              wallpaper:
+                                                  filteredWallpapers[index]!,
                                               onTap: () {
                                                 Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
                                                     builder: (context) =>
                                                         ProfileWallpapersScreen(
-                                                            index: index),
+                                                      index: index,
+                                                      userId: userId!,
+                                                    ),
                                                   ),
                                                 );
                                               },
-                                              child: Container(
-                                                clipBehavior: Clip.antiAlias,
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(20),
-                                                ),
-                                                padding: EdgeInsets.zero,
-                                                child: CachedNetworkImage(
-                                                  height: double.infinity,
-                                                  fit: BoxFit.cover,
-                                                  imageUrl: wallpaper.imageUrl!,
-                                                  placeholder: (context, url) =>
-                                                      const Center(
-                                                    child: SizedBox(
-                                                        height: 20,
-                                                        width: 20,
-                                                        child:
-                                                            CircularProgressIndicator()),
-                                                  ),
-                                                  errorWidget:
-                                                      (context, url, error) =>
-                                                          Container(
-                                                    color: Colors
-                                                        .red, // Change this to the desired error background color
-                                                    child: const Center(
-                                                      child: Icon(Icons.error,
-                                                          color: Colors.white),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
                                             );
                                           },
                                         );
                                       } else {
-                                        return Container();
+                                        return const Center(
+                                          child: Text('asdf'),
+                                        );
                                       }
                                     })),
                           ),
@@ -258,15 +283,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Navigator.pushNamed(context, AddWallpaperScreen.routeName);
               },
               style: ElevatedButton.styleFrom(
-                shape: CircleBorder(),
-                padding: EdgeInsets.all(14),
+                shape: const CircleBorder(),
+                padding: const EdgeInsets.all(14),
               ),
               child: const Icon(
                 Icons.add,
                 color: Colors.black,
               ),
             ),
-            SizedBox(height: 60),
+            SizedBox(
+              height: 60,
+            ),
           ],
         ),
       ),

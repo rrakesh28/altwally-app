@@ -12,6 +12,7 @@ class AppScreen extends StatefulWidget {
   const AppScreen({super.key, this.index});
 
   @override
+  // ignore: library_private_types_in_public_api
   _MyHomePageState createState() => _MyHomePageState();
 }
 
@@ -59,14 +60,54 @@ class _MyHomePageState extends State<AppScreen>
     final Color unselectedColor = colors[currentPage].computeLuminance() < 0.5
         ? Colors.black
         : Colors.white;
-    final Color unselectedColorReverse =
-        colors[currentPage].computeLuminance() < 0.5
-            ? Colors.white
-            : Colors.black;
+    // final Color unselectedColorReverse =
+    //     colors[currentPage].computeLuminance() < 0.5
+    //         ? Colors.white
+    //         : Colors.black;
 
     return Scaffold(
       body: BottomBar(
         clip: Clip.none,
+        fit: StackFit.expand,
+        icon: (width, height) => Center(
+          child: IconButton(
+            padding: EdgeInsets.zero,
+            onPressed: null,
+            icon: Icon(
+              Icons.arrow_upward_rounded,
+              color: unselectedColor,
+              size: width,
+            ),
+          ),
+        ),
+        borderRadius: BorderRadius.circular(500),
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.decelerate,
+        showIcon: true,
+        width: MediaQuery.of(context).size.width * 0.8,
+        barColor: Colors.black,
+        start: 2,
+        end: 0,
+        offset: 10,
+        barAlignment: Alignment.bottomCenter,
+        iconHeight: 30,
+        iconWidth: 30,
+        reverse: false,
+        hideOnScroll: true,
+        scrollOpposite: false,
+        onBottomBarHidden: () {},
+        onBottomBarShown: () {},
+        body: (context, controller) => TabBarView(
+          controller: tabController,
+          dragStartBehavior: DragStartBehavior.down,
+          physics: const BouncingScrollPhysics(),
+          children: const [
+            HomeScreen(),
+            ExploreScreen(),
+            FavouriteWallpapersScreen(),
+            ProfileScreen(),
+          ],
+        ),
         child: Stack(
           alignment: Alignment.center,
           clipBehavior: Clip.none,
@@ -74,7 +115,7 @@ class _MyHomePageState extends State<AppScreen>
             TabBar(
               indicatorPadding: const EdgeInsets.fromLTRB(6, 0, 6, 0),
               controller: tabController,
-              indicator: UnderlineTabIndicator(
+              indicator: const UnderlineTabIndicator(
                   borderSide: BorderSide(
                     color: Colors.white,
                     width: 4,
@@ -129,46 +170,6 @@ class _MyHomePageState extends State<AppScreen>
             //     child: Icon(Icons.add),
             //   ),
             // )
-          ],
-        ),
-        fit: StackFit.expand,
-        icon: (width, height) => Center(
-          child: IconButton(
-            padding: EdgeInsets.zero,
-            onPressed: null,
-            icon: Icon(
-              Icons.arrow_upward_rounded,
-              color: unselectedColor,
-              size: width,
-            ),
-          ),
-        ),
-        borderRadius: BorderRadius.circular(500),
-        duration: Duration(milliseconds: 500),
-        curve: Curves.decelerate,
-        showIcon: true,
-        width: MediaQuery.of(context).size.width * 0.8,
-        barColor: Colors.black,
-        start: 2,
-        end: 0,
-        offset: 10,
-        barAlignment: Alignment.bottomCenter,
-        iconHeight: 30,
-        iconWidth: 30,
-        reverse: false,
-        hideOnScroll: true,
-        scrollOpposite: false,
-        onBottomBarHidden: () {},
-        onBottomBarShown: () {},
-        body: (context, controller) => TabBarView(
-          controller: tabController,
-          dragStartBehavior: DragStartBehavior.down,
-          physics: const BouncingScrollPhysics(),
-          children: const [
-            HomeScreen(),
-            ExploreScreen(),
-            FavouriteWallpapersScreen(),
-            ProfileScreen(),
           ],
         ),
       ),

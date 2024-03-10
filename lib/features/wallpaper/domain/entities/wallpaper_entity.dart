@@ -17,16 +17,18 @@ class WallpaperEntity extends Equatable {
   final int? height;
   final int? width;
   bool? favourite;
-  final int? likes;
-  final int? views;
-  final int? downloads;
+  int? likes;
+  int? views;
+  int? downloads;
   final bool? wallOfTheMonth;
+  String? blurHash;
   final Timestamp? createdAt;
   final Timestamp? updatedAt;
   final UserEntity? user;
   final CategoryEntity? category;
 
   WallpaperEntity({
+    this.blurHash,
     this.id,
     this.userId,
     this.categoryId,
@@ -63,9 +65,56 @@ class WallpaperEntity extends Equatable {
         width,
         favourite,
         likes,
+        blurHash,
         views,
         downloads,
         user,
         category,
       ];
+
+  WallpaperEntity copyWith({
+    String? id,
+    String? userId,
+    String? categoryId,
+    String? title,
+    File? image,
+    String? imageUrl,
+    int? size,
+    String? color,
+    bool? wallOfTheMonth,
+    int? height,
+    int? width,
+    bool? favourite,
+    int? likes,
+    String? blurHash,
+    int? views,
+    int? downloads,
+    Timestamp? createdAt,
+    Timestamp? updatedAt,
+    UserEntity? user,
+    CategoryEntity? category,
+  }) {
+    return WallpaperEntity(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      categoryId: categoryId ?? this.categoryId,
+      title: title ?? this.title,
+      image: image ?? this.image,
+      imageUrl: imageUrl ?? this.imageUrl,
+      size: size ?? this.size,
+      color: color ?? this.color,
+      wallOfTheMonth: wallOfTheMonth ?? this.wallOfTheMonth,
+      height: height ?? this.height,
+      width: width ?? this.width,
+      favourite: favourite ?? this.favourite,
+      likes: likes ?? this.likes,
+      blurHash: blurHash ?? this.blurHash,
+      views: views ?? this.views,
+      downloads: downloads ?? this.downloads,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      user: user ?? this.user,
+      category: category ?? this.category,
+    );
+  }
 }

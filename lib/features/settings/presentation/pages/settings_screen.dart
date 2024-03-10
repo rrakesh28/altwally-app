@@ -1,11 +1,8 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_cubit.dart';
-import 'package:alt__wally/features/user/presentation/cubit/auth/auth_state.dart';
 import 'package:alt__wally/features/user/presentation/pages/auth/login_screen.dart';
 import 'package:alt__wally/features/user/presentation/pages/profile_screen/update_profile_screen.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

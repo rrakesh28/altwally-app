@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:alt__wally/common/toast.dart';
 import 'package:alt__wally/common/widgets/custom_textfield.dart';
 import 'package:alt__wally/core/common/widgets/validation_error_widget.dart';
-import 'package:alt__wally/features/settings/presentation/pages/settings_screen.dart';
 import 'package:alt__wally/features/user/domain/entities/user_entity.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_state.dart';
@@ -97,7 +96,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   Future<void> _cropBannerImage() async {
     CroppedFile? croppedFile = await ImageCropper().cropImage(
       sourcePath: bannerImage!.path,
-      aspectRatio: CropAspectRatio(ratioX: 16, ratioY: 9),
+      aspectRatio: const CropAspectRatio(ratioX: 16, ratioY: 9),
       uiSettings: [
         AndroidUiSettings(
           toolbarTitle: 'Cropper',
@@ -286,7 +285,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                             ),
                             Center(
                               child: IconButton(
-                                icon: Icon(Icons.edit),
+                                icon: const Icon(Icons.edit),
                                 onPressed: () {
                                   picProfileImage();
                                 },

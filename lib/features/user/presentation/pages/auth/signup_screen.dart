@@ -7,7 +7,6 @@ import 'package:alt__wally/features/user/domain/entities/user_entity.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/credential/credential_cubit.dart';
 import 'package:alt__wally/features/user/presentation/pages/auth/login_screen.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -108,7 +107,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 child: Center(
                   child: Container(
-                    padding: EdgeInsets.only(top: 10),
+                    padding: const EdgeInsets.only(top: 10),
                     width: 300,
                     child: Image.asset(
                       'assets/images/name.png',

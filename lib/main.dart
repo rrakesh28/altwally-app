@@ -27,12 +27,34 @@ import 'injection_container.dart' as di;
 
 import 'router.dart';
 
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+
+class CustomCacheManager {
+  static final BaseCacheManager _instance = _createCustomCacheManager();
+
+  static BaseCacheManager get instance => _instance;
+  static const key = 'wallpapers';
+
+  static BaseCacheManager _createCustomCacheManager() {
+    return CacheManager(
+      Config(
+        key,
+        stalePeriod: const Duration(days: 7),
+        maxNrOfCacheObjects: 20,
+        repo: JsonCacheInfoRepository(databaseName: key),
+        fileService: HttpFileService(),
+      ),
+    );
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  CustomCacheManager.instance;
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  FirebaseFirestore.instance.settings = Settings(
+  FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: true,
   );
   await di.init();
@@ -93,7 +115,7 @@ class MyApp extends StatelessWidget {
             theme: ThemeData(
               colorScheme: lightDynamic,
               useMaterial3: true,
-              textTheme: GoogleFonts.interTextTheme(),
+              textTheme: GoogleFonts.hindTextTheme(),
             ),
             debugShowCheckedModeBanner: false,
             initialRoute: '/',

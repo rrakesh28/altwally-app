@@ -5,8 +5,13 @@ import 'package:alt__wally/features/user/data/model/user_model.dart';
 import 'package:alt__wally/features/wallpaper/domain/entities/wallpaper_entity.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+// ignore: must_be_immutable
 class WallpaperModel extends WallpaperEntity {
+  @override
+  // ignore: overridden_fields
   final UserModel? user;
+  @override
+  // ignore: overridden_fields
   final CategoryModel? category;
 
   WallpaperModel({
@@ -26,6 +31,7 @@ class WallpaperModel extends WallpaperEntity {
     int? likes,
     int? views,
     int? downloads,
+    String? blurHash,
     this.user,
     this.category,
   }) : super(
@@ -41,6 +47,7 @@ class WallpaperModel extends WallpaperEntity {
             likes: likes,
             downloads: downloads,
             views: views,
+            blurHash: blurHash,
             createdAt: createdAt,
             updatedAt: updatedAt,
             favourite: favourite);
@@ -57,6 +64,7 @@ class WallpaperModel extends WallpaperEntity {
       height: snapshotMap['height'],
       width: snapshotMap['width'],
       wallOfTheMonth: snapshotMap['wall_of_the_month'],
+      blurHash: snapshotMap['blur_hash'],
       createdAt: snapshotMap['created_at'],
       updatedAt: snapshotMap['updated_at'],
       user: UserModel.fromMap(snapshotMap['user']),
@@ -75,6 +83,7 @@ class WallpaperModel extends WallpaperEntity {
       "height": height,
       "width": width,
       "wall_of_the_month": wallOfTheMonth,
+      "blur_hash": blurHash,
       "created_at": createdAt,
       "updated_at": updatedAt,
       "user": user?.toDocument(), // Assuming UserModel has a toMap method

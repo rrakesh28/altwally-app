@@ -1,12 +1,15 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:alt__wally/core/util/resource.dart';
 import 'package:alt__wally/features/category/data/model/category_model.dart';
 import 'package:alt__wally/features/wallpaper/data/model/wallpaper_model.dart';
 import 'package:alt__wally/features/wallpaper/domain/entities/wallpaper_entity.dart';
 import 'package:alt__wally/features/wallpaper/domain/repository/wallpaper_repository.dart';
+import 'package:blurhash_ffi/blurhash.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class WallpaperRepositoryImpl implements WallpaperRepository {
@@ -36,12 +39,16 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
         final responseString = String.fromCharCodes(responeData);
         final jsonMap = jsonDecode(responseString);
 
+        final imageProvider = NetworkImage(jsonMap['secure_url']);
+        final String blurHash = await BlurhashFFI.encode(imageProvider);
+
         final newWallpapers = WallpaperModel(
                 id: wallpaperId,
                 userId: auth.currentUser!.uid,
                 categoryId: wallpaper.categoryId,
                 title: wallpaper.title,
                 imageUrl: jsonMap['secure_url'],
+                blurHash: blurHash,
                 size: wallpaper.size,
                 height: wallpaper.height,
                 width: wallpaper.width,
@@ -239,6 +246,11 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
           ),
         );
 
+        if (!wallpaperData['blur_hash']) {
+          final imageProvider = NetworkImage(wallpaperData['image_url']);
+          wallpaper.blurHash = await BlurhashFFI.encode(imageProvider);
+        }
+
         wallpaper.favourite = true;
 
         wallpapers.add(wallpaper);
@@ -323,7 +335,6 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
               (doc.data() as Map<String, dynamic>)['wallpaper_id'] as String)
           .toList();
 
-      // Iterate through the documents
       for (var document in querySnapshot.docs) {
         var wallpaperData = document.data();
 
@@ -333,22 +344,52 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
             .get();
         var categoryData = categorySnapshot.data();
 
+        // int desiredQuality = 30;
+
+        // String lowerQualityUrl = wallpaperData['image_url']
+        //     .replaceFirst('/upload/', '/upload/q_$desiredQuality/');
+
+        int desiredWidth = 800;
+        int desiredHeight = 1000;
+
+        String lowerQualityUrl = wallpaperData['image_url'].replaceFirst(
+            '/upload/', '/upload/w_$desiredWidth,h_$desiredHeight,c_fill/');
+
         var wallpaper = WallpaperModel(
           id: document.id,
           userId: wallpaperData['user_id'],
           categoryId: wallpaperData['category_id'],
+          blurHash: wallpaperData['blur_hash'],
           category: CategoryModel(
             id: wallpaperData['category_id'],
             name: categoryData?['name'],
           ),
           title: wallpaperData['title'],
-          imageUrl: wallpaperData['image_url'],
+          imageUrl: lowerQualityUrl,
           size: wallpaperData['size'],
           height: wallpaperData['height'],
           width: wallpaperData['width'],
+          wallOfTheMonth: wallpaperData['wall_of_the_month'],
         );
 
+        // if (wallpaperData['blur_hash'] == null) {
+        //   print(wallpaperData);
+        //   final imageProvider = NetworkImage(wallpaperData['image_url']);
+        //   final blurHash = await BlurhashFFI.encode(imageProvider);
+        //   print(blurHash);
+        //   wallpaper.blurHash = blurHash;
+        //   await wallpapersCollection
+        //       .doc(document.id)
+        //       .update({"blur_hash": blurHash});
+        // }
         wallpaper.favourite = favoriteWallpaperIds.contains(wallpaper.id);
+        final int views = Random().nextInt(4001) + 1000;
+        final int likes = Random().nextInt(3001) + 1000;
+        final int downloads = Random().nextInt(1001) + 1000;
+
+        wallpaper.views = views;
+        wallpaper.likes = likes;
+        wallpaper.downloads = downloads;
 
         wallpapers.add(wallpaper);
       }
