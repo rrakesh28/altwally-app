@@ -2,23 +2,20 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:alt__wally/core/util/resource.dart';
-import 'package:alt__wally/features/user/data/model/user_model.dart';
 import 'package:alt__wally/features/user/domain/entities/user_entity.dart';
 import 'package:alt__wally/features/user/domain/repository/user_repository.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
+import 'package:supabase/supabase.dart';
 
 class UserRepositoryImpl implements UserRepository {
-  final FirebaseFirestore fireStore;
-  final FirebaseAuth auth;
+  final SupabaseClient supabaseClient;
 
-  UserRepositoryImpl({required this.fireStore, required this.auth});
+  UserRepositoryImpl({required this.supabaseClient});
 
   @override
   Future<Resource> forgotPassword(String email) async {
     try {
-      await auth.sendPasswordResetEmail(email: email);
+      await supabaseClient.auth.resetPasswordForEmail(email);
       return Resource.success(data: '');
     } catch (e) {
       return Resource.failure(errorMessage: "Something went wrong");
@@ -27,31 +24,25 @@ class UserRepositoryImpl implements UserRepository {
 
   @override
   Future<String> getCurrentUId() async {
-    return auth.currentUser!.uid;
+    final currentUser = supabaseClient.auth.currentUser;
+    if (currentUser != null) {
+      return currentUser.id;
+    } else {
+      throw Exception("User is not logged in.");
+    }
   }
 
   @override
   Future<Resource> getUserById(String uid) async {
     try {
-      final userCollection = fireStore.collection("users");
+      final userResponse =
+          await supabaseClient.from('users').select().eq('id', uid).single();
 
-      final UserEntity? user = await userCollection
-          .limit(1)
-          .where("uid", isEqualTo: uid)
-          .get()
-          .then((QuerySnapshot<Map<String, dynamic>> querySnapshot) {
-        if (querySnapshot.docs.isNotEmpty) {
-          return UserEntity.fromUserModel(
-            UserModel.fromSnapshot(querySnapshot.docs.first),
-          );
-        } else {
-          return null;
-        }
-      });
+      final user = UserEntity.fromJson(userResponse);
 
       return Resource.success(data: user);
     } catch (e) {
-      return Resource.failure(errorMessage: "Something went wrong");
+      return Resource.failure(errorMessage: "Something went wrong: $e");
     }
   }
 
@@ -59,11 +50,11 @@ class UserRepositoryImpl implements UserRepository {
   Future<Resource> getUpdateUser(
       UserEntity user, String currentPassword) async {
     try {
-      final userCollection = fireStore.collection('users');
+      final userTable = supabaseClient.from('users');
 
       Map<String, dynamic> updates = {
         'name': user.name,
-        'updated_at': Timestamp.fromDate(DateTime.now()),
+        'updated_at': DateTime.now().toIso8601String(),
       };
 
       Future<void> updateImageUrl(
@@ -81,30 +72,28 @@ class UserRepositoryImpl implements UserRepository {
         updateImageUrl('banner_image_url', user.bannerImage, 'fjns4yz9'),
       ]);
 
-      if (user.email != FirebaseAuth.instance.currentUser!.email) {
-        await auth.currentUser!.reauthenticateWithCredential(
-          EmailAuthProvider.credential(
-            email: auth.currentUser!.email!,
-            password: currentPassword,
-          ),
+      if (user.email != supabaseClient.auth.currentUser?.email) {
+        final res = await supabaseClient.auth.updateUser(
+          UserAttributes(email: user.email),
         );
-        await FirebaseAuth.instance.currentUser!
-            .verifyBeforeUpdateEmail(user.email!);
-        updates['email'] = user.email;
+        if (res.user != null) {
+          updates['email'] = user.email;
+        } else {
+          return Resource.failure(errorMessage: 'Failed to update email');
+        }
       }
 
       if (user.password != null && user.password!.trim().isNotEmpty) {
-        await auth.currentUser!.reauthenticateWithCredential(
-          EmailAuthProvider.credential(
-            email: auth.currentUser!.email!,
-            password: currentPassword,
-          ),
+        final res = await supabaseClient.auth.updateUser(
+          UserAttributes(password: user.password),
         );
-        await FirebaseAuth.instance.currentUser!.updatePassword(user.password!);
+        if (res.user != null) {
+          return Resource.failure(errorMessage: 'Failed to update password');
+        }
       }
 
-      String uid = await getCurrentUId();
-      await userCollection.doc(uid).update(updates);
+      String uid = supabaseClient.auth.currentUser?.id ?? '';
+      await userTable.update(updates).eq('id', uid);
 
       return Resource.success(data: '');
     } catch (e) {
@@ -131,72 +120,73 @@ class UserRepositoryImpl implements UserRepository {
 
   @override
   Future<bool> isSignIn() async {
-    return auth.currentUser?.uid != null;
+    try {
+      final session = supabaseClient.auth.currentSession;
+      return session != null;
+    } catch (e) {
+      return false;
+    }
   }
 
   @override
   Future<Resource> signIn(UserEntity user) async {
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: user.email!, password: user.password!);
+      final AuthResponse response =
+          await supabaseClient.auth.signInWithPassword(
+        email: user.email!,
+        password: user.password!,
+      );
 
-      User? firebaseUser = FirebaseAuth.instance.currentUser;
-
-      if (firebaseUser != null) {
+      if (response.user != null) {
         return Resource.success(data: '');
       } else {
         return Resource.failure(errorMessage: 'Credentials not found.');
       }
     } catch (e) {
-      if (e is FirebaseAuthException) {
-        return Resource.failure(errorMessage: 'Credentials not found.');
-      } else {
-        return Resource.failure(errorMessage: 'Something went wrong');
-      }
+      return Resource.failure(errorMessage: 'Something went wrong');
     }
   }
 
   @override
   Future<void> signOut() async {
-    await auth.signOut();
+    await supabaseClient.auth.signOut();
   }
 
   @override
   Future<Resource> signUp(UserEntity user) async {
     try {
-      var authResult = await auth.createUserWithEmailAndPassword(
-          email: user.email!, password: user.password!);
+      AuthResponse response = await supabaseClient.auth.signUp(
+        email: user.email!,
+        password: user.password!,
+      );
 
-      var uid = authResult.user!.uid;
+      final uid = response.user!.id;
+      final email = response.user!.email;
 
-      final CollectionReference userCollection = fireStore.collection('users');
+      final users =
+          await supabaseClient.from('users').select("*").eq('id', uid).limit(1);
 
-      var userDoc = await userCollection.doc(uid).get();
+      if (users.isEmpty) {
+        final newUser = {
+          'email': email,
+          'id': uid,
+          'name': user.name!,
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
+          'profile_image_url':
+              'https://res.cloudinary.com/dklkwu5fw/image/upload/v1707755056/profile_images/lkidtk25byxho4aljtvc.jpg',
+          'banner_image_url':
+              'https://res.cloudinary.com/dklkwu5fw/image/upload/v1707755095/banner_images/f9j4mav0zlqrj51u9bg5.jpg',
+        };
 
-      if (!userDoc.exists) {
-        var newUser = UserModel(
-                email: user.email!,
-                uid: uid,
-                name: user.name!,
-                createdAt: Timestamp.fromDate(DateTime.now()),
-                updatedAt: Timestamp.fromDate(DateTime.now()),
-                profileImageUrl:
-                    "https://res.cloudinary.com/dklkwu5fw/image/upload/v1707755056/profile_images/lkidtk25byxho4aljtvc.jpg",
-                bannerImageUrl:
-                    "https://res.cloudinary.com/dklkwu5fw/image/upload/v1707755095/banner_images/f9j4mav0zlqrj51u9bg5.jpg")
-            .toDocument();
-        await userCollection.doc(uid).set(newUser);
-        return Resource.success(data: '');
+        await supabaseClient.from('users').insert([newUser]);
       } else {
-        return Resource.failure(errorMessage: "Email Id Already Exists");
+        return Resource.failure(errorMessage: 'Email ID already exists');
       }
+
+      return Resource.success(data: '');
     } catch (e) {
-      if (e is FirebaseAuthException) {
-        String errorMessage = e.toString().replaceAll(RegExp(r'\[.*\]'), '');
-        return Resource.failure(errorMessage: errorMessage.trim());
-      } else {
-        return Resource.failure(errorMessage: "Something went wrong");
-      }
+      return Resource.failure(errorMessage: e.toString());
     }
   }
 }

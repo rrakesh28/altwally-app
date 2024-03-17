@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:alt__wally/features/category/domain/entities/category_entity.dart';
 import 'package:alt__wally/features/user/domain/entities/user_entity.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
 class WallpaperEntity extends Equatable {
@@ -22,8 +21,8 @@ class WallpaperEntity extends Equatable {
   int? downloads;
   final bool? wallOfTheMonth;
   String? blurHash;
-  final Timestamp? createdAt;
-  final Timestamp? updatedAt;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
   final UserEntity? user;
   final CategoryEntity? category;
 
@@ -89,8 +88,8 @@ class WallpaperEntity extends Equatable {
     String? blurHash,
     int? views,
     int? downloads,
-    Timestamp? createdAt,
-    Timestamp? updatedAt,
+    DateTime? createdAt,
+    DateTime? updatedAt,
     UserEntity? user,
     CategoryEntity? category,
   }) {

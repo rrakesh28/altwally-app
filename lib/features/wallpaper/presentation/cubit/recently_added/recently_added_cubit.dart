@@ -8,12 +8,14 @@ class GetRecentlyAddedWallpapersCubit extends Cubit<GetRecentlyAddedState> {
   GetRecentlyAddedWallpapersCubit({required this.getRecentlyAddedUseCase})
       : super(Initial());
 
-  Future<void> fetchData() async {
+  Future<void> fetchData({bool fetchFromRemote = false}) async {
     try {
       emit(Initial());
-      final wallpapersResponse = await getRecentlyAddedUseCase.call();
+      final wallpapersResponse =
+          await getRecentlyAddedUseCase.call(fetchFromRemote);
       emit(Loaded(wallpapers: wallpapersResponse.data));
     } catch (e) {
+      print(e);
       emit(Failed());
     }
   }

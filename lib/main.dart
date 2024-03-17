@@ -1,6 +1,8 @@
 import 'package:alt__wally/features/app/presentation/pages/app_screen.dart';
+import 'package:alt__wally/features/category/data/model/category_model.dart';
 import 'package:alt__wally/features/category/presentation/cubit/get_categories_cubit/category_cubit.dart';
 import 'package:alt__wally/features/splash/pages/splash_screen.dart';
+import 'package:alt__wally/features/user/data/model/user_model.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/auth/auth_state.dart';
 import 'package:alt__wally/features/user/presentation/cubit/credential/credential_cubit.dart';
@@ -8,6 +10,7 @@ import 'package:alt__wally/features/user/presentation/cubit/forgot_password/forg
 import 'package:alt__wally/features/user/presentation/cubit/profile/profile_cubit.dart';
 import 'package:alt__wally/features/user/presentation/cubit/update/update_user_cubit.dart';
 import 'package:alt__wally/features/user/presentation/pages/auth/login_screen.dart';
+import 'package:alt__wally/features/wallpaper/data/model/wallpaper_model.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/add_wallpaper/add_wallpaper_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/get_category_wallpapers/get_category_wallpapers_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/get_favourite/get_favourite_wallpapers_cubit.dart';
@@ -15,19 +18,19 @@ import 'package:alt__wally/features/wallpaper/presentation/cubit/popular_wallpap
 import 'package:alt__wally/features/wallpaper/presentation/cubit/recently_added/recently_added_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/toggle_favourite/toggle_favourite_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/wall_of_the_month/wall_of_the_month_cubit.dart';
-import 'package:alt__wally/firebase_options.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dynamic_color/dynamic_color.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hive/hive.dart';
 
 import 'injection_container.dart' as di;
 
 import 'router.dart';
 
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+
+import 'package:path_provider/path_provider.dart' as path_provider;
 
 class CustomCacheManager {
   static final BaseCacheManager _instance = _createCustomCacheManager();
@@ -50,13 +53,14 @@ class CustomCacheManager {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final appDocumentDir = await path_provider.getApplicationDocumentsDirectory();
+  Hive.init(appDocumentDir.path);
+
+  Hive.registerAdapter(UserModelAdapter());
+  Hive.registerAdapter(CategoryModelAdapter());
+  Hive.registerAdapter(WallpaperModelAdapter());
+
   CustomCacheManager.instance;
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  FirebaseFirestore.instance.settings = const Settings(
-    persistenceEnabled: true,
-  );
   await di.init();
   runApp(const MyApp());
 }

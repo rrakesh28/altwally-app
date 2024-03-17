@@ -1,34 +1,56 @@
+import 'package:hive/hive.dart';
 import 'package:alt__wally/features/category/domain/entities/category_entity.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-class CategoryModel extends CategoryEntity {
+part 'category_model.g.dart';
+
+@HiveType(typeId: 1)
+class CategoryModel extends HiveObject {
+  @HiveField(0)
+  final String id;
+
+  @HiveField(1)
+  final String name;
+
+  @HiveField(2)
+  final String? bannerImageUrl;
+
+  @HiveField(3)
+  final DateTime createdAt;
+
+  @HiveField(4)
+  final DateTime updatedAt;
+
   CategoryModel({
-    required String id,
-    required String name,
-    String? bannerImageUrl,
-    String? type,
-  }) : super(name: name, id: id, type: type, bannerImageUrl: bannerImageUrl);
+    required this.id,
+    required this.name,
+    this.bannerImageUrl,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  })  : this.createdAt = createdAt,
+        this.updatedAt = updatedAt;
 
   factory CategoryModel.fromMap(Map<String, dynamic> map) {
     return CategoryModel(
       id: map['id'],
       name: map['name'],
       bannerImageUrl: map['banner_image_url'],
-      type: map['type'],
+      createdAt: DateTime.parse(map['created_at']),
+      updatedAt: DateTime.parse(map['updated_at']),
     );
   }
 
-  factory CategoryModel.fromSnapshot(DocumentSnapshot snapshot) {
-    var snapshotMap = snapshot.data() as Map<String, dynamic>;
-    return CategoryModel.fromMap(snapshotMap);
+  CategoryEntity toEntity() {
+    return CategoryEntity(
+      id: id,
+      name: name,
+      bannerImageUrl: bannerImageUrl,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
   }
 
-  Map<String, dynamic> toDocument() {
-    return {
-      "id": id,
-      "name": name,
-      "banner_image_url": bannerImageUrl,
-      'type': type,
-    };
+  @override
+  String toString() {
+    return 'CategoryModel(id: $id, name: $name, bannerImageUrl: $bannerImageUrl, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 }

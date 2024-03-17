@@ -4,14 +4,12 @@ class CategoryEntity extends Equatable {
   final String? id;
   final String? name;
   final String? bannerImageUrl;
-  final String? type;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
   CategoryEntity({
     this.id,
     this.name,
-    this.type,
     this.bannerImageUrl,
     this.createdAt,
     this.updatedAt,
@@ -22,7 +20,6 @@ class CategoryEntity extends Equatable {
         id,
         name,
         bannerImageUrl,
-        type,
         createdAt,
         updatedAt,
       ];

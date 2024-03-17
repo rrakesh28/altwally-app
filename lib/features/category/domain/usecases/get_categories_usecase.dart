@@ -6,7 +6,7 @@ class GetCategoriesUseCase {
 
   GetCategoriesUseCase({required this.repository});
 
-  Future<Resource> call() {
-    return repository.getCategories();
+  Future<Resource> call(bool fetchFromRemote) {
+    return repository.getCategories(fetchFromRemote);
   }
 }

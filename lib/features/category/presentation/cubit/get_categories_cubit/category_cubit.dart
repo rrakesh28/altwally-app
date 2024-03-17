@@ -13,10 +13,10 @@ class CategoryCubit extends Cubit<CategoryState> {
     required this.getCategoriesUseCase,
   }) : super(CategoryInitial());
 
-  Future<void> getCategories() async {
+  Future<void> getCategories({bool fetchFromRemote = false}) async {
     emit(CategoriesLoading());
     try {
-      final resource = await getCategoriesUseCase.call();
+      final resource = await getCategoriesUseCase.call(fetchFromRemote);
       if (resource.success) {
         emit(CategoriesLoaded(categories: resource.data));
       } else {

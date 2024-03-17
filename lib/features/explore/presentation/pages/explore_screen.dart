@@ -82,6 +82,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     BlocBuilder<GetRecentlyAddedWallpapersCubit,
                         GetRecentlyAddedState>(
                       builder: (context, state) {
+                        if (state is Initial) {
+                          return const Center(
+                            child: SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+                        }
                         if (state is Loaded) {
                           return SliverGrid(
                             gridDelegate:
@@ -124,6 +133,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     BlocBuilder<GetRecentlyAddedWallpapersCubit,
                         GetRecentlyAddedState>(
                       builder: (context, state) {
+                        if (state is Initial) {
+                          return const Center(
+                            child: SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+                        }
                         if (state is Loaded) {
                           List<WallpaperEntity> shuffledWallpapers =
                               List.from(state.wallpapers)..shuffle();

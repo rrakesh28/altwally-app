@@ -7,6 +7,8 @@ import 'package:alt__wally/features/category/domain/entities/category_entity.dar
 import 'package:alt__wally/features/category/presentation/cubit/get_categories_cubit/category_cubit.dart';
 import 'package:alt__wally/features/wallpaper/domain/entities/wallpaper_entity.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/add_wallpaper/add_wallpaper_cubit.dart';
+import 'package:alt__wally/features/wallpaper/presentation/services/notification_service.dart';
+import 'package:alt__wally/injection_container.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:dotted_border/dotted_border.dart';
@@ -106,6 +108,8 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
       );
 
       BlocProvider.of<AddWallpaperCubit>(context).submit(wallpaper);
+
+      // Navigator.pop(context);
     } catch (e) {
       showToast(message: "Error: $e");
     }
@@ -164,6 +168,7 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
 
   @override
   Widget build(BuildContext context) {
+    NotificationService notificationService = sl<NotificationService>();
     return SafeArea(
         child: Scaffold(
       key: _scaffoldState,
@@ -177,6 +182,7 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
       body: BlocConsumer<AddWallpaperCubit, AddWallpaperState>(
           listener: (context, addWallpaperState) {
         if (addWallpaperState is AddWallpaperSuccess) {
+          // notificationService.showSuccessNotification();
           showToast(message: "Wallpaper Added Successfully!!");
           Navigator.push(
             context,
@@ -185,8 +191,12 @@ class _AddWallpaperScreenState extends State<AddWallpaperScreen> {
             ),
           );
         }
+        if (addWallpaperState is AddWallpaperLoading) {
+          // notificationService.showLoadingNotification();
+        }
         if (addWallpaperState is AddWallpaperFailed) {
-          showToast(message: addWallpaperState.errorMessage);
+          // notificationService.showFailedNotification();
+          // showToast(message: addWallpaperState.errorMessage);
         }
       }, builder: (context, state) {
         return SingleChildScrollView(

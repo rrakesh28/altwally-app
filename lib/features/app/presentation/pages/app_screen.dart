@@ -60,11 +60,6 @@ class _MyHomePageState extends State<AppScreen>
     final Color unselectedColor = colors[currentPage].computeLuminance() < 0.5
         ? Colors.black
         : Colors.white;
-    // final Color unselectedColorReverse =
-    //     colors[currentPage].computeLuminance() < 0.5
-    //         ? Colors.white
-    //         : Colors.black;
-
     return Scaffold(
       body: BottomBar(
         clip: Clip.none,
@@ -100,7 +95,6 @@ class _MyHomePageState extends State<AppScreen>
         body: (context, controller) => TabBarView(
           controller: tabController,
           dragStartBehavior: DragStartBehavior.down,
-          physics: const BouncingScrollPhysics(),
           children: const [
             HomeScreen(),
             ExploreScreen(),
@@ -163,13 +157,6 @@ class _MyHomePageState extends State<AppScreen>
                 ),
               ],
             ),
-            // Positioned(
-            //   top: -25,
-            //   child: FloatingActionButton(
-            //     onPressed: () {},
-            //     child: Icon(Icons.add),
-            //   ),
-            // )
           ],
         ),
       ),

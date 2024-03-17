@@ -1,65 +1,64 @@
-import 'dart:io';
+import 'package:hive/hive.dart';
 
-import 'package:alt__wally/features/user/domain/entities/user_entity.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+part 'user_model.g.dart'; // Include this line to enable code generation
 
-class UserModel extends UserEntity {
-  UserModel(
-      {required String name,
-      required String email,
-      String? uid,
-      File? profileImage,
-      String? profileImageUrl,
-      File? bannerImage,
-      String? bannerImageUrl,
-      Timestamp? createdAt,
-      Timestamp? updatedAt})
-      : super(
-            name: name,
-            email: email,
-            uid: uid,
-            profileImage: profileImage,
-            profileImageUrl: profileImageUrl,
-            bannerImage: bannerImage,
-            bannerImageUrl: bannerImageUrl,
-            createdAt: createdAt,
-            updatedAt: updatedAt);
+@HiveType(typeId: 0) // Add HiveType annotation with a unique typeId
+class UserModel extends HiveObject {
+  @HiveField(0) // Add HiveField annotation for each field
+  final String name;
 
+  @HiveField(1)
+  final String email;
+
+  @HiveField(2)
+  final String? id;
+
+  @HiveField(3)
+  final String? profileImageUrl;
+
+  @HiveField(4)
+  final String? bannerImageUrl;
+
+  @HiveField(5)
+  final DateTime? createdAt;
+
+  @HiveField(6)
+  final DateTime? updatedAt;
+
+  UserModel({
+    required this.name,
+    required this.email,
+    this.id,
+    this.profileImageUrl,
+    this.bannerImageUrl,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  // You can keep the factory constructor for deserialization
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
       name: map['name'],
       email: map['email'],
       profileImageUrl: map['profile_image_url'],
       bannerImageUrl: map['banner_image_url'],
-      uid: map['uid'],
-      createdAt: map['created_at'],
-      updatedAt: map['updated_at'],
+      id: map['id'],
+      createdAt:
+          map['created_at'] != null ? (map['created_at']).toDate() : null,
+      updatedAt:
+          map['updated_at'] != null ? (map['updated_at']).toDate() : null,
     );
   }
 
-  factory UserModel.fromSnapshot(DocumentSnapshot snapshot) {
-    var snapshotMap = snapshot.data() as Map<String, dynamic>;
-
-    return UserModel(
-      name: snapshotMap['name'],
-      email: snapshotMap['email'],
-      profileImageUrl: snapshotMap['profile_image_url'],
-      bannerImageUrl: snapshotMap['banner_image_url'],
-      uid: snapshotMap['uid'],
-      createdAt: snapshotMap['created_at'],
-      updatedAt: snapshotMap['updated_at'],
-    );
-  }
-
-  Map<String, dynamic> toDocument() {
+  Map<String, dynamic> toMap() {
     return {
-      "name": name,
-      "email": email,
-      "uid": uid,
+      'name': name,
+      'email': email,
       'profile_image_url': profileImageUrl,
       'banner_image_url': bannerImageUrl,
+      'id': id,
       'created_at': createdAt,
-      'update_at': updatedAt,
+      'updated_at': updatedAt,
     };
   }
 }

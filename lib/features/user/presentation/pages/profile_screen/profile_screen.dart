@@ -11,6 +11,7 @@ import 'package:alt__wally/features/wallpaper/presentation/pages/add_wallpaper_s
 import 'package:alt__wally/features/wallpaper/presentation/pages/profile_wallpapers_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -29,26 +30,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-
-    final authState = context.read<AuthCubit>().state;
-
-    final profileState = context.read<ProfileCubit>().state;
-    if (authState is Authenticated) {
-      if (profileState is ProfileLoaded) {
-        wallpapersData = profileState.wallpapers;
-      } else {
-        BlocProvider.of<ProfileCubit>(context).fetchData(authState.uid);
-      }
-    }
   }
 
-  Future<void> _refresh() async {
-    final authState = context.read<AuthCubit>().state;
-
-    if (authState is Authenticated) {
-      BlocProvider.of<ProfileCubit>(context).fetchData(authState.uid);
-    }
-  }
+  Future<void> _refresh() async {}
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 BlocBuilder<AuthCubit, AuthState>(
                   builder: (context, state) {
                     if (state is Authenticated) {
-                      userId = state.user.uid!;
+                      userId = state.user.id!;
 
                       return CachedNetworkImage(
                         height: 200,
@@ -191,7 +175,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       } else if (state is Loaded) {
                                         if (state.wallpapers
                                             .where((wallpaper) =>
-                                                wallpaper?.favourite == true)
+                                                wallpaper?.userId == userId)
                                             .isEmpty) {
                                           return Center(
                                             child: Column(
@@ -261,8 +245,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           },
                                         );
                                       } else {
-                                        return const Center(
-                                          child: Text('asdf'),
+                                        return Center(
+                                          child: Container(),
                                         );
                                       }
                                     })),

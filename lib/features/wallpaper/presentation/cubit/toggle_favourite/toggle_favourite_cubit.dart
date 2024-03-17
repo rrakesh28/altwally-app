@@ -10,11 +10,12 @@ class ToggleFavouriteWallpaperCubit
       {required this.toggleFavouriteWallpapersUseCase})
       : super(ToggleFavouriteWallpaperInitial());
 
-  Future<void> toggle(WallpaperEntity wallpaper) async {
+  Future<void> toggle(WallpaperEntity wallpaper, String type) async {
     try {
-      await toggleFavouriteWallpapersUseCase.call(wallpaper);
+      await toggleFavouriteWallpapersUseCase.call(wallpaper, type);
       emit(ToggleFavouriteWallpaperSuccessful());
     } catch (e) {
+      print(e);
       emit(ToggleFavouriteWallpaperFailed());
     }
   }

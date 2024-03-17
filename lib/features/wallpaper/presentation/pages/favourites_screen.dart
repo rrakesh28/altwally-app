@@ -1,11 +1,7 @@
 import 'package:alt__wally/core/common/widgets/wallpaper_card.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/get_favourite/get_favourite_wallpapers_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/get_favourite/get_favourite_wallpapers_state.dart';
-import 'package:alt__wally/features/wallpaper/presentation/cubit/recently_added/recently_added_cubit.dart';
-import 'package:alt__wally/features/wallpaper/presentation/cubit/recently_added/recently_added_state.dart';
-import 'package:alt__wally/features/wallpaper/presentation/cubit/toggle_favourite/toggle_favourite_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/pages/favourites_details_screen.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -25,8 +21,7 @@ class _FavouriteWallpapersScreenState extends State<FavouriteWallpapersScreen> {
     super.initState();
     final favouritesState = context.read<GetFavouriteWallpapersCubit>().state;
 
-    if (favouritesState is GetFavouriteWallpapersFailed ||
-        favouritesState is GetFavouriteWallpapersInitial) {
+    if (favouritesState is! GetFavouriteWallpapersLoaded) {
       BlocProvider.of<GetFavouriteWallpapersCubit>(context).fetchData();
     }
   }
@@ -53,15 +48,14 @@ class _FavouriteWallpapersScreenState extends State<FavouriteWallpapersScreen> {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(15.0),
-                  child: BlocBuilder<GetRecentlyAddedWallpapersCubit,
-                      GetRecentlyAddedState>(
+                  child: BlocBuilder<GetFavouriteWallpapersCubit,
+                      GetFavouriteWallpapersState>(
                     builder: (context, state) {
-                      if (state is Initial) {
+                      print(state);
+                      if (state is GetFavouriteWallpapersInitial) {
                         return const Center(child: CircularProgressIndicator());
-                      } else if (state is Loaded) {
-                        if (state.wallpapers
-                            .where((wallpaper) => wallpaper?.favourite == true)
-                            .isEmpty) {
+                      } else if (state is GetFavouriteWallpapersLoaded) {
+                        if (state.wallpapers.isEmpty) {
                           return Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -89,32 +83,10 @@ class _FavouriteWallpapersScreenState extends State<FavouriteWallpapersScreen> {
                             mainAxisSpacing: 8.0,
                             childAspectRatio: 0.6,
                           ),
-                          itemCount: state.wallpapers
-                              .where(
-                                  (wallpaper) => wallpaper?.favourite == true)
-                              .length,
+                          itemCount: state.wallpapers.length,
                           itemBuilder: (context, index) {
-                            final filteredWallpapers = state.wallpapers
-                                .where(
-                                    (wallpaper) => wallpaper?.favourite == true)
-                                .toList();
-
-                            print('filteredWallpapers');
-                            print(filteredWallpapers);
-
-                            if (filteredWallpapers.isEmpty) {
-                              return const Center(
-                                child: Text(
-                                  'No favourite wallpapers found',
-                                  style: TextStyle(fontSize: 200),
-                                ),
-                              );
-                            }
-
-                            print('asdf');
-
                             return WallpaperItem(
-                              wallpaper: filteredWallpapers[index]!,
+                              wallpaper: state.wallpapers[index]!,
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -129,9 +101,7 @@ class _FavouriteWallpapersScreenState extends State<FavouriteWallpapersScreen> {
                           },
                         );
                       } else {
-                        return const Center(
-                          child: Text('asdf'),
-                        );
+                        return Container();
                       }
                     },
                   ),

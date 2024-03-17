@@ -7,7 +7,7 @@ class ToggleFavouriteWallpapersUseCase {
 
   ToggleFavouriteWallpapersUseCase({required this.repository});
 
-  Future<Resource> call(WallpaperEntity wallpaper) {
-    return repository.toggleFavouriteWallpaper(wallpaper);
+  Future<Resource> call(WallpaperEntity wallpaper, String type) {
+    return repository.toggleFavouriteWallpaper(wallpaper, type);
   }
 }

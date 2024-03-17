@@ -1,197 +1,183 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:alt__wally/core/util/resource.dart';
-import 'package:alt__wally/features/category/data/model/category_model.dart';
+import 'package:alt__wally/features/wallpaper/data/datasource/local/wallpaper_local_data_source.dart';
+import 'package:alt__wally/features/wallpaper/data/datasource/remote/wallpaper_remote_data_source.dart';
 import 'package:alt__wally/features/wallpaper/data/model/wallpaper_model.dart';
 import 'package:alt__wally/features/wallpaper/domain/entities/wallpaper_entity.dart';
 import 'package:alt__wally/features/wallpaper/domain/repository/wallpaper_repository.dart';
 import 'package:blurhash_ffi/blurhash.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:supabase/supabase.dart';
+import 'package:uuid/uuid.dart';
+
+const String CLOUDINARY_UPLOAD_PRESET = 'bcdwnuxb';
 
 class WallpaperRepositoryImpl implements WallpaperRepository {
-  final FirebaseFirestore firestore;
-  final FirebaseAuth auth;
+  final SupabaseClient supabaseClient;
+  final WallpaperLocalDataSource wallpaperLocalDataSource;
+  final WallpaperRemoteDataSource wallpaperRemoteDataSource;
 
-  WallpaperRepositoryImpl({required this.firestore, required this.auth});
+  WallpaperRepositoryImpl({
+    required this.supabaseClient,
+    required this.wallpaperLocalDataSource,
+    required this.wallpaperRemoteDataSource,
+  });
 
   @override
   Future<Resource> addWallpaper(WallpaperEntity wallpaper) async {
     try {
-      final wallpapersCollection = firestore.collection("wallpapers");
+      // Upload image to Cloudinary in parallel with downloading the image
+      final uploadTask = uploadImageToCloudinary(wallpaper.image!.path);
+      final imageUrl = await uploadTask;
 
-      final wallpaperId = wallpapersCollection.doc().id;
-
-      final url = Uri.parse("https://api.cloudinary.com/v1_1/dklkwu5fw/upload");
-
-      final request = http.MultipartRequest('POST', url)
-        ..fields['upload_preset'] = 'bcdwnuxb'
-        ..files.add(
-            await http.MultipartFile.fromPath('file', wallpaper.image!.path));
-
-      final response = await request.send();
-
-      if (response.statusCode == 200) {
-        final responeData = await response.stream.toBytes();
-        final responseString = String.fromCharCodes(responeData);
-        final jsonMap = jsonDecode(responseString);
-
-        final imageProvider = NetworkImage(jsonMap['secure_url']);
-        final String blurHash = await BlurhashFFI.encode(imageProvider);
-
-        final newWallpapers = WallpaperModel(
-                id: wallpaperId,
-                userId: auth.currentUser!.uid,
-                categoryId: wallpaper.categoryId,
-                title: wallpaper.title,
-                imageUrl: jsonMap['secure_url'],
-                blurHash: blurHash,
-                size: wallpaper.size,
-                height: wallpaper.height,
-                width: wallpaper.width,
-                createdAt: Timestamp.fromDate(DateTime.now()),
-                updatedAt: Timestamp.fromDate(DateTime.now()),
-                likes: 0,
-                views: 0,
-                downloads: 0)
-            .toDocument();
-
-        await wallpapersCollection.doc(wallpaperId).set(newWallpapers);
-
-        return Resource.success(data: '');
-      } else {
+      if (imageUrl == null) {
         return Resource.failure(errorMessage: 'Failed to upload image');
       }
+
+      // Download image
+      final downloadTask = downloadImage(imageUrl);
+      final imageBytes = await downloadTask;
+
+      if (imageBytes == null) {
+        return Resource.failure(errorMessage: 'Failed to download image');
+      }
+
+      // Generate blur hash
+      final blurHash = await generateBlurHash(imageBytes);
+
+      // Create wallpaper data
+      final newWallpaperData =
+          createWallpaperData(imageUrl, wallpaper, blurHash);
+      final wallpaperModel = WallpaperModel.fromMap(newWallpaperData);
+
+      // Perform remote operation
+      final remoteTask = wallpaperRemoteDataSource.addWallpaper(wallpaperModel);
+
+      // Save image locally
+      final localFilePath = await saveImageToPrivateDirectory(imageBytes);
+      final localFilePathString = localFilePath?.path ?? '';
+      final localData =
+          createLocalWallpaperData(localFilePathString, newWallpaperData);
+      final localWallpaperModel = WallpaperModel.fromMap(localData);
+
+      // Wait for both remote and local operations to complete
+      await Future.wait([
+        remoteTask,
+        wallpaperLocalDataSource.addWallpaper(localWallpaperModel)
+      ]);
+
+      return Resource.success(data: '');
     } catch (e) {
       return Resource.failure(errorMessage: 'Something went wrong');
     }
   }
 
+  Future<String?> uploadImageToCloudinary(String imagePath) async {
+    try {
+      final url = Uri.parse("https://api.cloudinary.com/v1_1/dklkwu5fw/upload");
+      final request = http.MultipartRequest('POST', url)
+        ..fields['upload_preset'] = CLOUDINARY_UPLOAD_PRESET
+        ..files.add(await http.MultipartFile.fromPath('file', imagePath));
+
+      final response = await request.send();
+      if (response.statusCode == 200) {
+        final responseData = await response.stream.toBytes();
+        final responseString = String.fromCharCodes(responseData);
+        final jsonMap = jsonDecode(responseString);
+        return jsonMap['secure_url'];
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Map<String, dynamic> createWallpaperData(
+      String imageUrl, WallpaperEntity wallpaper, String blurHash) {
+    return {
+      'id': Uuid().v4(),
+      'user_id': supabaseClient.auth.currentUser?.id,
+      'category_id': wallpaper.categoryId,
+      'title': wallpaper.title,
+      'image_url': imageUrl,
+      'blur_hash': blurHash,
+      'size': wallpaper.size,
+      'height': wallpaper.height,
+      'width': wallpaper.width,
+      'created_at': DateTime.now().toIso8601String(),
+      'updated_at': DateTime.now().toIso8601String(),
+      'likes': 0,
+      'views': 0,
+      'downloads': 0,
+    };
+  }
+
+  Map<String, dynamic> createLocalWallpaperData(
+      String localFilePath, Map<String, dynamic> wallpaperData) {
+    return {
+      ...wallpaperData,
+      'image_url': localFilePath,
+    };
+  }
+
+  Future<String> generateBlurHash(Uint8List imageBytes) async {
+    final imageProvider = MemoryImage(imageBytes);
+    return await BlurhashFFI.encode(imageProvider);
+  }
+
+  Future<Uint8List?> downloadImage(String url) async {
+    try {
+      var response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        return response.bodyBytes;
+      }
+    } catch (e) {
+      print('Error downloading image: $e');
+    }
+    return null;
+  }
+
+  Future<File?> saveImageToPrivateDirectory(Uint8List imageBytes) async {
+    try {
+      final appDocDir = await getApplicationDocumentsDirectory();
+      final appDocPath = appDocDir.path;
+
+      final uniqueFileName =
+          '${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(999999)}';
+
+      final imageFile = File('$appDocPath/$uniqueFileName.jpg');
+      await imageFile.writeAsBytes(imageBytes);
+      return imageFile;
+    } catch (e) {
+      print('Error saving image to private directory: $e');
+      return null;
+    }
+  }
+
   @override
   Future<Resource> getWallpapersByUserId(userId) async {
-    try {
-      final wallpapersCollection = firestore.collection("wallpapers");
-      final querySnapshot =
-          await wallpapersCollection.where("user_id", isEqualTo: userId).get();
-
-      List<WallpaperModel> wallpapers = [];
-
-      QuerySnapshot favoritesSnapshot = await firestore
-          .collection('user_favourites')
-          .where('user_id', isEqualTo: auth.currentUser!.uid)
-          .get();
-
-      List<String> favoriteWallpaperIds = favoritesSnapshot.docs
-          .map((doc) =>
-              (doc.data() as Map<String, dynamic>)['wallpaper_id'] as String)
-          .toList();
-
-      for (var document in querySnapshot.docs) {
-        var wallpaperData = document.data() as Map<String, dynamic>;
-
-        var wallpaper = WallpaperModel(
-          id: document.id,
-          userId: wallpaperData['user_id'],
-          categoryId: wallpaperData['category_id'],
-          title: wallpaperData['title'],
-          imageUrl: wallpaperData['image_url'],
-          size: wallpaperData['size'],
-          height: wallpaperData['height'],
-          width: wallpaperData['width'],
-          likes: wallpaperData['likes'],
-          downloads: wallpaperData['downloads'],
-          views: wallpaperData['views'],
-        );
-
-        wallpaper.favourite = favoriteWallpaperIds.contains(wallpaper.id);
-        wallpapers.add(wallpaper);
-      }
-      return Resource.success(data: wallpapers);
-    } catch (e) {
-      print(e);
-      return Resource.failure(errorMessage: "Something went wrong");
-    }
+    throw UnimplementedError();
   }
 
   @override
   Future<Resource> getWallOfTheMonth() async {
-    try {
-      final wallpapersCollection = firestore.collection("wallpapers");
-      final querySnapshot = await wallpapersCollection
-          .where("wall_of_the_month", isEqualTo: true)
-          .get();
-
-      List<WallpaperModel> wallpapers = [];
-
-      QuerySnapshot favoritesSnapshot = await firestore
-          .collection('user_favourites')
-          .where('user_id', isEqualTo: auth.currentUser!.uid)
-          .get();
-
-      List<String> favoriteWallpaperIds = favoritesSnapshot.docs
-          .map((doc) =>
-              (doc.data() as Map<String, dynamic>)['wallpaper_id'] as String)
-          .toList();
-
-      for (var document in querySnapshot.docs) {
-        var wallpaperData = document.data() as Map<String, dynamic>;
-
-        var wallpaper = WallpaperModel(
-          id: document.id,
-          userId: wallpaperData['user_id'],
-          categoryId: wallpaperData['category_id'],
-          title: wallpaperData['title'],
-          imageUrl: wallpaperData['image_url'],
-          size: wallpaperData['size'],
-          height: wallpaperData['height'],
-          width: wallpaperData['width'],
-        );
-
-        wallpaper.favourite = favoriteWallpaperIds.contains(wallpaper.id);
-
-        wallpapers.add(wallpaper);
-
-        // // Update likes, views, and downloads counts
-        // await wallpapersCollection
-        //     .doc(document.id)
-        //     .update({'views': wallpaperData['views'] + 1});
-        // await wallpapersCollection
-        //     .doc(document.id)
-        //     .update({'likes': wallpaperData['likes'] + 1});
-        // await wallpapersCollection
-        //     .doc(document.id)
-        //     .update({'downloads': wallpaperData['downloads'] + 1});
-
-        wallpaper.favourite = favoriteWallpaperIds.contains(wallpaper.id);
-      }
-      return Resource.success(data: wallpapers);
-    } catch (e) {
-      return Resource.failure(errorMessage: "Something went wrong");
-    }
+    throw UnimplementedError();
   }
 
   @override
-  Future<Resource> toggleFavouriteWallpaper(WallpaperEntity wallpaper) async {
+  Future<Resource> toggleFavouriteWallpaper(
+      WallpaperEntity wallpaper, String type) async {
     try {
-      QuerySnapshot querySnapshot = await firestore
-          .collection('user_favourites')
-          .where('user_id', isEqualTo: auth.currentUser!.uid)
-          .where('wallpaper_id', isEqualTo: wallpaper.id)
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        querySnapshot.docs.forEach((doc) {
-          doc.reference.delete();
-        });
-      } else {
-        await FirebaseFirestore.instance.collection('user_favourites').add({
-          'user_id': auth.currentUser!.uid,
-          'wallpaper_id': wallpaper.id,
-        });
-      }
+      WallpaperModel wallpaperModel =
+          WallpaperModel.fromWallpaperEntity(wallpaper);
+      wallpaperLocalDataSource.toggleFavouriteWallpaper(wallpaperModel, type);
+      wallpaperRemoteDataSource.toggleFavouriteWallpaper(wallpaperModel, type);
       return Resource.success(data: '');
     } catch (e) {
       return Resource.failure(errorMessage: 'Something went wrong');
@@ -201,262 +187,113 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
   @override
   Future<Resource> getFavouriteWallpapers() async {
     try {
-      QuerySnapshot userFavouritesSnapshot = await FirebaseFirestore.instance
-          .collection('user_favourites')
-          .where('user_id', isEqualTo: auth.currentUser!.uid)
-          .get();
+      final wallpaperResource =
+          await wallpaperLocalDataSource.getFavouriteWallpapers();
 
-      List<String> wallpaperIds = userFavouritesSnapshot.docs
-          .map((doc) =>
-              (doc.data() as Map<String, dynamic>)['wallpaper_id'] as String)
-          .toList();
+      final List<WallpaperModel> localWallpapers = wallpaperResource.data ?? [];
 
-      QuerySnapshot wallpapersSnapshot = await FirebaseFirestore.instance
-          .collection('wallpapers')
-          .where(FieldPath.documentId, whereIn: wallpaperIds)
-          .get();
+      List<WallpaperEntity> wallpaperEntities =
+          localWallpapers.map((wallpaper) => wallpaper.toEntity()).toList();
 
-      List<WallpaperModel> wallpapers = [];
-
-      QuerySnapshot categoriesSnapshot =
-          await firestore.collection("categories").get();
-
-      Map<String, dynamic> categoriesMap = {};
-      categoriesSnapshot.docs.forEach((categoryDoc) {
-        categoriesMap[categoryDoc.id] = categoryDoc.data();
-      });
-
-      for (var document in wallpapersSnapshot.docs) {
-        var wallpaperData = document.data() as Map<String, dynamic>;
-
-        var categoryData = categoriesMap[wallpaperData['category_id']];
-
-        var wallpaper = WallpaperModel(
-          id: document.id,
-          userId: wallpaperData['user_id'],
-          categoryId: wallpaperData['category_id'],
-          title: wallpaperData['title'],
-          imageUrl: wallpaperData['image_url'],
-          size: wallpaperData['size'],
-          height: wallpaperData['height'],
-          width: wallpaperData['width'],
-          category: CategoryModel(
-            id: wallpaperData['category_id'],
-            name: categoryData?['name'],
-          ),
-        );
-
-        if (!wallpaperData['blur_hash']) {
-          final imageProvider = NetworkImage(wallpaperData['image_url']);
-          wallpaper.blurHash = await BlurhashFFI.encode(imageProvider);
-        }
-
-        wallpaper.favourite = true;
-
-        wallpapers.add(wallpaper);
-      }
-
-      return Resource.success(data: wallpapers);
+      return Resource.success(data: wallpaperEntities);
     } catch (e) {
-      return Resource.failure(errorMessage: 'Something went wrong');
+      return Resource.failure(errorMessage: "Something went wrong");
     }
   }
 
   @override
   Future<Resource> getWallpapersByCategory(categoryId) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Resource> getRecentlyAddedWallpapers(bool fetchFromRemote) async {
     try {
-      final wallpapersCollection = firestore.collection("wallpapers");
-      final querySnapshot = await wallpapersCollection
-          .where("category_id", isEqualTo: categoryId)
-          .get();
+      final localResource =
+          await wallpaperLocalDataSource.getRecentlyAddedWallpapers();
+      final List<WallpaperModel> localWallpapers = localResource.data ?? [];
 
-      List<WallpaperModel> wallpapers = [];
+      List<WallpaperEntity> wallpaperEntities =
+          localWallpapers.map((wallpaper) => wallpaper.toEntity()).toList();
 
-      QuerySnapshot favoritesSnapshot = await firestore
-          .collection('user_favourites')
-          .where('user_id', isEqualTo: auth.currentUser!.uid)
-          .get();
-
-      List<String> favoriteWallpaperIds = favoritesSnapshot.docs
-          .map((doc) =>
-              (doc.data() as Map<String, dynamic>)['wallpaper_id'] as String)
-          .toList();
-
-      var categorySnapshot =
-          await firestore.collection("categories").doc(categoryId).get();
-      var categoryData = categorySnapshot.data();
-
-      for (var document in querySnapshot.docs) {
-        var wallpaperData = document.data();
-
-        var wallpaper = WallpaperModel(
-          id: document.id,
-          userId: wallpaperData['user_id'],
-          categoryId: wallpaperData['category_id'],
-          title: wallpaperData['title'],
-          imageUrl: wallpaperData['image_url'],
-          size: wallpaperData['size'],
-          height: wallpaperData['height'],
-          width: wallpaperData['width'],
-          category: CategoryModel(
-            id: wallpaperData['category_id'],
-            name: categoryData?['name'],
-          ),
-        );
-
-        wallpaper.favourite = favoriteWallpaperIds.contains(wallpaper.id);
-
-        wallpapers.add(wallpaper);
+      if (localWallpapers.isNotEmpty && !fetchFromRemote) {
+        return Resource.success(data: wallpaperEntities);
       }
 
-      return Resource.success(data: wallpapers);
+      await _syncWallpapersInBackground(
+          wallpaperRemoteDataSource, wallpaperLocalDataSource);
+
+      final updatedLocalResource =
+          await wallpaperLocalDataSource.getRecentlyAddedWallpapers();
+      final List<WallpaperModel> updatedLocalWallpapers =
+          updatedLocalResource.data ?? [];
+
+      List<WallpaperEntity> updatedWallpaperEntities = updatedLocalWallpapers
+          .map((wallpaper) => wallpaper.toEntity())
+          .toList();
+      return Resource.success(data: updatedWallpaperEntities);
     } catch (e) {
-      print(e);
       return Resource.failure(errorMessage: "Something went wrong");
     }
   }
 
-  @override
-  Future<Resource> getRecentlyAddedWallpapers() async {
+  Future<void> _syncWallpapersInBackground(
+    WallpaperRemoteDataSource remoteDataSource,
+    WallpaperLocalDataSource localDataSource,
+  ) async {
     try {
-      final wallpapersCollection = firestore.collection("wallpapers");
-      final querySnapshot = await wallpapersCollection
-          .orderBy('created_at', descending: true)
-          .get();
-      List<WallpaperModel> wallpapers = [];
+      final localIdsResource = await localDataSource.getAllWallpaperIds();
 
-      QuerySnapshot favoritesSnapshot = await firestore
-          .collection('user_favourites')
-          .where('user_id', isEqualTo: auth.currentUser!.uid)
-          .get();
-
-      List<String> favoriteWallpaperIds = favoritesSnapshot.docs
-          .map((doc) =>
-              (doc.data() as Map<String, dynamic>)['wallpaper_id'] as String)
-          .toList();
-
-      for (var document in querySnapshot.docs) {
-        var wallpaperData = document.data();
-
-        var categorySnapshot = await firestore
-            .collection("categories")
-            .doc(wallpaperData['category_id'])
-            .get();
-        var categoryData = categorySnapshot.data();
-
-        // int desiredQuality = 30;
-
-        // String lowerQualityUrl = wallpaperData['image_url']
-        //     .replaceFirst('/upload/', '/upload/q_$desiredQuality/');
-
-        int desiredWidth = 800;
-        int desiredHeight = 1000;
-
-        String lowerQualityUrl = wallpaperData['image_url'].replaceFirst(
-            '/upload/', '/upload/w_$desiredWidth,h_$desiredHeight,c_fill/');
-
-        var wallpaper = WallpaperModel(
-          id: document.id,
-          userId: wallpaperData['user_id'],
-          categoryId: wallpaperData['category_id'],
-          blurHash: wallpaperData['blur_hash'],
-          category: CategoryModel(
-            id: wallpaperData['category_id'],
-            name: categoryData?['name'],
-          ),
-          title: wallpaperData['title'],
-          imageUrl: lowerQualityUrl,
-          size: wallpaperData['size'],
-          height: wallpaperData['height'],
-          width: wallpaperData['width'],
-          wallOfTheMonth: wallpaperData['wall_of_the_month'],
-        );
-
-        // if (wallpaperData['blur_hash'] == null) {
-        //   print(wallpaperData);
-        //   final imageProvider = NetworkImage(wallpaperData['image_url']);
-        //   final blurHash = await BlurhashFFI.encode(imageProvider);
-        //   print(blurHash);
-        //   wallpaper.blurHash = blurHash;
-        //   await wallpapersCollection
-        //       .doc(document.id)
-        //       .update({"blur_hash": blurHash});
-        // }
-        wallpaper.favourite = favoriteWallpaperIds.contains(wallpaper.id);
-        final int views = Random().nextInt(4001) + 1000;
-        final int likes = Random().nextInt(3001) + 1000;
-        final int downloads = Random().nextInt(1001) + 1000;
-
-        wallpaper.views = views;
-        wallpaper.likes = likes;
-        wallpaper.downloads = downloads;
-
-        wallpapers.add(wallpaper);
+      if (localIdsResource.success) {
+        final serverRecordsResource =
+            await remoteDataSource.getIdsNotInServer(localIdsResource.data);
+        if (serverRecordsResource.success) {
+          for (var record in serverRecordsResource.data) {
+            localDataSource.deleteWallpaper(record);
+          }
+        }
       }
-      return Resource.success(data: wallpapers);
+
+      DateTime? lastUpdatedAt;
+      final lastUpdatedRecordResource =
+          await localDataSource.getLastUpdatedRecord();
+      if (lastUpdatedRecordResource.success) {
+        if (lastUpdatedRecordResource.data.updatedAt != null) {
+          lastUpdatedAt = lastUpdatedRecordResource.data.updatedAt;
+        }
+      }
+      final updatedRecordsResource = lastUpdatedAt != null
+          ? await remoteDataSource.getUpdatedRecords(lastUpdatedAt)
+          : await remoteDataSource.getRecentlyAddedWallpapers();
+
+      if (!updatedRecordsResource.success) {
+        print('Failed to fetch updated records from the server');
+        return;
+      }
+
+      for (var record in updatedRecordsResource.data) {
+        final existingRecordResource =
+            await localDataSource.getWallpaperById(record['id']);
+
+        final imageBytes = await downloadImage(record['image_url']);
+        if (imageBytes != null) {
+          final localImagePath = await saveImageToPrivateDirectory(imageBytes);
+          record['image_url'] = localImagePath!.path;
+        }
+        WallpaperModel wallpaperModel = WallpaperModel.fromMap(record);
+        if (existingRecordResource.success) {
+          await localDataSource.updateWallpaper(wallpaperModel);
+        } else {
+          await localDataSource.addWallpaper(wallpaperModel);
+        }
+      }
     } catch (e) {
-      return Resource.failure(errorMessage: "Something went wrong");
+      print('Background - Error: $e');
     }
   }
 
   @override
   Future<Resource> getPopularWallpapers() async {
-    try {
-      final wallpapersCollection = firestore.collection("wallpapers");
-      final querySnapshot = await wallpapersCollection
-          .orderBy('created_at', descending: true)
-          .get();
-
-      List<DocumentSnapshot> documents = querySnapshot.docs.toList();
-      documents.shuffle();
-
-      List<WallpaperModel> wallpapers = [];
-
-      QuerySnapshot categoriesSnapshot =
-          await firestore.collection("categories").get();
-
-      Map<String, dynamic> categoriesMap = {};
-      categoriesSnapshot.docs.forEach((categoryDoc) {
-        categoriesMap[categoryDoc.id] = categoryDoc.data();
-      });
-
-      QuerySnapshot favoritesSnapshot = await firestore
-          .collection('user_favourites')
-          .where('user_id', isEqualTo: auth.currentUser!.uid)
-          .get();
-
-      List<String> favoriteWallpaperIds = favoritesSnapshot.docs
-          .map((doc) =>
-              (doc.data() as Map<String, dynamic>)['wallpaper_id'] as String)
-          .toList();
-
-      for (var document in documents) {
-        var wallpaperData = document.data() as Map<String, dynamic>;
-
-        var categoryData = categoriesMap[wallpaperData['category_id']];
-
-        var wallpaper = WallpaperModel(
-          id: document.id,
-          userId: wallpaperData['user_id'],
-          categoryId: wallpaperData['category_id'],
-          category: CategoryModel(
-            id: wallpaperData['category_id'],
-            name: categoryData?['name'],
-          ),
-          title: wallpaperData['title'],
-          imageUrl: wallpaperData['image_url'],
-          size: wallpaperData['size'],
-          height: wallpaperData['height'],
-          width: wallpaperData['width'],
-        );
-
-        wallpaper.favourite = favoriteWallpaperIds.contains(wallpaper.id);
-
-        wallpapers.add(wallpaper);
-      }
-      return Resource.success(data: wallpapers);
-    } catch (e) {
-      return Resource.failure(errorMessage: "Something went wrong");
-    }
+    throw UnimplementedError();
   }
 }

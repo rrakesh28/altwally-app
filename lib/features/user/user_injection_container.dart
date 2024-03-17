@@ -1,3 +1,6 @@
+import 'package:alt__wally/features/user/data/datasource/local/user_local_data_source.dart';
+import 'package:alt__wally/features/user/data/datasource/local/user_local_data_source_impl.dart';
+import 'package:alt__wally/features/user/data/datasource/remote/user_remote_data_source_impl.dart';
 import 'package:alt__wally/features/user/data/repository/user_repository_impl.dart';
 import 'package:alt__wally/features/user/domain/repository/user_repository.dart';
 import 'package:alt__wally/features/user/domain/usecases/forgot_password_usecase.dart';
@@ -57,5 +60,13 @@ Future<void> userInjectionContainer() async {
 
   //Repository
   sl.registerLazySingleton<UserRepository>(
-      () => UserRepositoryImpl(auth: sl.call(), fireStore: sl.call()));
+      () => UserRepositoryImpl(supabaseClient: sl.call()));
+
+  //Local DataStore
+  sl.registerLazySingleton<UserLocalDataSource>(
+      () => UserLocalDataSourceImpl());
+
+  //Remote DataStore
+  sl.registerLazySingleton<UserRemoteDataSourceImpl>(
+      () => UserRemoteDataSourceImpl(supabaseClient: sl.call()));
 }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:alt__wally/core/common/widgets/wallpaper_card.dart';
 import 'package:alt__wally/features/app/presentation/pages/app_screen.dart';
 import 'package:alt__wally/features/category/presentation/cubit/get_categories_cubit/category_cubit.dart';
@@ -13,7 +15,7 @@ import 'package:alt__wally/main.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_blurhash/flutter_blurhash.dart';
+import 'package:shimmer/shimmer.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String routeName = '/home-screen';
@@ -42,8 +44,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _refresh() async {
-    BlocProvider.of<CategoryCubit>(context).getCategories();
-    BlocProvider.of<GetRecentlyAddedWallpapersCubit>(context).fetchData();
+    BlocProvider.of<CategoryCubit>(context)
+        .getCategories(fetchFromRemote: true);
+
+    BlocProvider.of<GetRecentlyAddedWallpapersCubit>(context)
+        .fetchData(fetchFromRemote: true);
   }
 
   @override
@@ -65,17 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        title: GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const AppScreen(index: 0),
-              ),
-            );
-          },
-          child: Image.asset('assets/images/name.png', height: 24),
-        ),
+        title: Image.asset('assets/images/name.png', height: 24),
         centerTitle: true,
         actions: [
           BlocBuilder<AuthCubit, AuthState>(
@@ -142,8 +137,30 @@ class _HomeScreenState extends State<HomeScreen> {
                                   GetRecentlyAddedState>(
                                 builder: (context, state) {
                                   if (state is Initial) {
-                                    return const Center(
-                                        child: CircularProgressIndicator());
+                                    return Row(
+                                      children: <Widget>[
+                                        ...List.generate(
+                                          10,
+                                          (index) {
+                                            return SizedBox(
+                                              height: 160,
+                                              width: 130,
+                                              child: Shimmer.fromColors(
+                                                baseColor: Colors.grey.shade300,
+                                                highlightColor:
+                                                    Colors.grey.shade100,
+                                                enabled: true,
+                                                child: Container(
+                                                  color: Colors
+                                                      .white, // Placeholder color
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                        const SizedBox(width: 20),
+                                      ],
+                                    );
                                   } else if (state is Loaded) {
                                     final filteredWallpapers = state.wallpapers
                                         .where((wallpaper) =>
@@ -158,7 +175,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   true)
                                               .length,
                                           (index) {
-                                            print(index);
                                             var wallpaper =
                                                 filteredWallpapers[index];
 
@@ -188,55 +204,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                                             10),
                                                   ),
                                                   padding: EdgeInsets.zero,
-                                                  child: CachedNetworkImage(
+                                                  child: Image.file(
+                                                    File(wallpaper?.imageUrl ??
+                                                        ''), // Provide the local file path here
                                                     height: double.infinity,
                                                     fit: BoxFit.cover,
-                                                    imageUrl: wallpaper == null
-                                                        ? ''
-                                                        : wallpaper.imageUrl!,
-                                                    placeholder:
-                                                        (context, url) {
-                                                      if (wallpaper?.blurHash !=
-                                                          null) {
-                                                        return BlurHash(
-                                                          hash: wallpaper!
-                                                              .blurHash!,
-                                                          imageFit:
-                                                              BoxFit.cover,
-                                                          duration:
-                                                              const Duration(
-                                                                  milliseconds:
-                                                                      500),
-                                                        );
-                                                      } else {
-                                                        return const Center(
-                                                          child: SizedBox(
-                                                              width: 20,
-                                                              height: 20,
-                                                              child:
-                                                                  CircularProgressIndicator()),
-                                                        );
-                                                      }
+                                                    errorBuilder: (context,
+                                                        error, stackTrace) {
+                                                      return Container(
+                                                        color: Colors.red,
+                                                        child: const Center(
+                                                          child: Icon(
+                                                              Icons.error,
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
+                                                      );
                                                     },
-                                                    errorWidget:
-                                                        (context, url, error) =>
-                                                            Container(
-                                                      color: Colors
-                                                          .red, // Change this to the desired error background color
-                                                      child: const Center(
-                                                        child: Icon(Icons.error,
-                                                            color:
-                                                                Colors.white),
-                                                      ),
-                                                    ),
-                                                    cacheManager:
-                                                        CustomCacheManager
-                                                            .instance,
                                                   ),
                                                 ),
                                               );
                                             } else {
-                                              return Container(); // Skip if it's not the wallpaper of the month
+                                              return Container();
                                             }
                                           },
                                         ),
@@ -369,6 +358,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 BlocBuilder<GetRecentlyAddedWallpapersCubit,
                     GetRecentlyAddedState>(
                   builder: (context, state) {
+                    if (state is Initial) {
+                      return SliverToBoxAdapter(
+                        child: const Center(
+                          child: SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                      );
+                    }
                     if (state is Loaded) {
                       return SliverGrid(
                         gridDelegate:
@@ -379,6 +379,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 childAspectRatio: 0.6),
                         delegate: SliverChildBuilderDelegate(
                           (BuildContext context, int index) {
+                            // return Text(state.wallpapers[index]?.title ?? '');
                             return WallpaperItem(
                               wallpaper: state.wallpapers[index]!,
                               onTap: () {

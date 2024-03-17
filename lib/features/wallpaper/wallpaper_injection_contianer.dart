@@ -1,3 +1,7 @@
+import 'package:alt__wally/features/wallpaper/data/datasource/local/wallpaper_local_data_source.dart';
+import 'package:alt__wally/features/wallpaper/data/datasource/local/wallpaper_local_data_source_impl.dart';
+import 'package:alt__wally/features/wallpaper/data/datasource/remote/wallpaper_remote_data_source.dart';
+import 'package:alt__wally/features/wallpaper/data/datasource/remote/wallpaper_remote_data_source_impl.dart';
 import 'package:alt__wally/features/wallpaper/data/repository/wallpaper_repository_impl.dart';
 import 'package:alt__wally/features/wallpaper/domain/repository/wallpaper_repository.dart';
 import 'package:alt__wally/features/wallpaper/domain/usecases/get_category_wallpapers.dart';
@@ -15,6 +19,7 @@ import 'package:alt__wally/features/wallpaper/presentation/cubit/toggle_favourit
 import 'package:alt__wally/features/wallpaper/presentation/cubit/add_wallpaper/add_wallpaper_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/get_favourite/get_favourite_wallpapers_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/wall_of_the_month/wall_of_the_month_cubit.dart';
+import 'package:alt__wally/features/wallpaper/presentation/services/notification_service.dart';
 
 import '../../injection_container.dart';
 
@@ -54,6 +59,19 @@ Future<void> wallpaperInjectionContainer() async {
       () => GetCategoryWallpapersUseCase(repository: sl.call()));
 
   //Repository
-  sl.registerLazySingleton<WallpaperRepository>(
-      () => WallpaperRepositoryImpl(auth: sl.call(), firestore: sl.call()));
+  sl.registerLazySingleton<WallpaperRepository>(() => WallpaperRepositoryImpl(
+      supabaseClient: sl.call(),
+      wallpaperLocalDataSource: sl.call(),
+      wallpaperRemoteDataSource: sl.call()));
+
+  //Local DataStore
+  sl.registerLazySingleton<WallpaperLocalDataSource>(() =>
+      WallpaperLocalDataSourceImpl(
+          userLocalDataSource: sl.call(), categoryLocalDataSource: sl.call()));
+
+  //Remote DataStore
+  sl.registerLazySingleton<WallpaperRemoteDataSource>(
+      () => WallpaperRemoteDataSourceImpl(supabaseClient: sl.call()));
+
+  sl.registerLazySingleton<NotificationService>(() => NotificationService());
 }
