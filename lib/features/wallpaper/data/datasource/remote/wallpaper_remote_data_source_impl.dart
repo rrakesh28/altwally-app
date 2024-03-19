@@ -10,6 +10,8 @@ class WallpaperRemoteDataSourceImpl implements WallpaperRemoteDataSource {
 
   @override
   Future<Resource> addWallpaper(WallpaperModel wallpaper) async {
+    print('wallpaper');
+    print(wallpaper);
     try {
       final response =
           await supabaseClient.from('wallpapers').insert([wallpaper.toJson()]);
@@ -22,6 +24,7 @@ class WallpaperRemoteDataSourceImpl implements WallpaperRemoteDataSource {
         return Resource.success(data: wallpaper);
       }
     } catch (e) {
+      print(e);
       return Resource.failure(errorMessage: 'Failed to add wallpaper: $e');
     }
   }

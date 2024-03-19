@@ -119,13 +119,13 @@ class _WallpaperScreenState extends State<WallpaperScreen> {
         },
         child: Stack(
           children: [
-            Image.file(
-              File(widget.wallpaper.imageUrl!),
+            CachedNetworkImage(
+              imageUrl: widget.wallpaper.imageUrl!,
+              fit: BoxFit.cover,
               width: double.infinity,
               height: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) =>
-                  const Icon(Icons.error),
+              placeholder: (context, url) => const CircularProgressIndicator(),
+              errorWidget: (context, url, error) => const Icon(Icons.error),
             ),
             Positioned(
               left: 0,

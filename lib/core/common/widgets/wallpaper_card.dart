@@ -4,8 +4,11 @@ import 'package:alt__wally/features/wallpaper/domain/entities/wallpaper_entity.d
 import 'package:alt__wally/features/wallpaper/presentation/cubit/get_favourite/get_favourite_wallpapers_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/get_favourite/get_favourite_wallpapers_state.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/toggle_favourite/toggle_favourite_cubit.dart';
+import 'package:alt__wally/main.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_blurhash/flutter_blurhash.dart';
 
 class WallpaperItem extends StatefulWidget {
   final WallpaperEntity wallpaper;
@@ -66,16 +69,34 @@ class _WallpaperItemState extends State<WallpaperItem> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Image.file(
-                File(widget.wallpaper.imageUrl!),
+              child: CachedNetworkImage(
                 height: double.infinity,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
+                imageUrl: widget.wallpaper.imageUrl ?? '',
+                placeholder: (context, url) {
+                  if (widget.wallpaper.blurHash != null) {
+                    return BlurHash(
+                      hash: widget.wallpaper.blurHash!,
+                      imageFit: BoxFit.cover,
+                      duration: const Duration(milliseconds: 500),
+                    );
+                  } else {
+                    return const Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  }
+                },
+                errorWidget: (context, url, error) => Container(
                   color: Colors.red,
                   child: const Center(
                     child: Icon(Icons.error, color: Colors.white),
                   ),
                 ),
+                cacheManager: CustomCacheManager.instance,
               ),
             ),
             if (widget.wallpaper.category != null)

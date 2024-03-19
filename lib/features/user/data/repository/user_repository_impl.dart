@@ -155,6 +155,15 @@ class UserRepositoryImpl implements UserRepository {
   @override
   Future<Resource> signUp(UserEntity user) async {
     try {
+      final users = await supabaseClient
+          .from('users')
+          .select("*")
+          .eq('email', user.email!)
+          .limit(1);
+      if (users.isNotEmpty) {
+        return Resource.failure(errorMessage: 'Email ID already exists');
+      }
+
       AuthResponse response = await supabaseClient.auth.signUp(
         email: user.email!,
         password: user.password!,
@@ -163,26 +172,19 @@ class UserRepositoryImpl implements UserRepository {
       final uid = response.user!.id;
       final email = response.user!.email;
 
-      final users =
-          await supabaseClient.from('users').select("*").eq('id', uid).limit(1);
+      final newUser = {
+        'email': email,
+        'id': uid,
+        'name': user.name!,
+        'created_at': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toIso8601String(),
+        'profile_image_url':
+            'https://res.cloudinary.com/dklkwu5fw/image/upload/v1707755056/profile_images/lkidtk25byxho4aljtvc.jpg',
+        'banner_image_url':
+            'https://res.cloudinary.com/dklkwu5fw/image/upload/v1707755095/banner_images/f9j4mav0zlqrj51u9bg5.jpg',
+      };
 
-      if (users.isEmpty) {
-        final newUser = {
-          'email': email,
-          'id': uid,
-          'name': user.name!,
-          'created_at': DateTime.now().toIso8601String(),
-          'updated_at': DateTime.now().toIso8601String(),
-          'profile_image_url':
-              'https://res.cloudinary.com/dklkwu5fw/image/upload/v1707755056/profile_images/lkidtk25byxho4aljtvc.jpg',
-          'banner_image_url':
-              'https://res.cloudinary.com/dklkwu5fw/image/upload/v1707755095/banner_images/f9j4mav0zlqrj51u9bg5.jpg',
-        };
-
-        await supabaseClient.from('users').insert([newUser]);
-      } else {
-        return Resource.failure(errorMessage: 'Email ID already exists');
-      }
+      await supabaseClient.from('users').insert([newUser]);
 
       return Resource.success(data: '');
     } catch (e) {

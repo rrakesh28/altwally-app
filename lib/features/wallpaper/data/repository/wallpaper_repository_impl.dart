@@ -32,7 +32,6 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
   @override
   Future<Resource> addWallpaper(WallpaperEntity wallpaper) async {
     try {
-      // Upload image to Cloudinary in parallel with downloading the image
       final uploadTask = uploadImageToCloudinary(wallpaper.image!.path);
       final imageUrl = await uploadTask;
 
@@ -40,40 +39,34 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
         return Resource.failure(errorMessage: 'Failed to upload image');
       }
 
-      // Download image
-      final downloadTask = downloadImage(imageUrl);
-      final imageBytes = await downloadTask;
+      // final downloadTask = downloadImage(imageUrl);
+      // final imageBytes = await downloadTask;
 
-      if (imageBytes == null) {
-        return Resource.failure(errorMessage: 'Failed to download image');
-      }
+      // if (imageBytes == null) {
+      //   return Resource.failure(errorMessage: 'Failed to download image');
+      // }
+      final imageProvider = NetworkImage(imageUrl);
+      final String blurHash = await BlurhashFFI.encode(imageProvider);
+      // final blurHash = await generateBlurHash(imageUrl);
 
-      // Generate blur hash
-      final blurHash = await generateBlurHash(imageBytes);
-
-      // Create wallpaper data
       final newWallpaperData =
           createWallpaperData(imageUrl, wallpaper, blurHash);
       final wallpaperModel = WallpaperModel.fromMap(newWallpaperData);
 
-      // Perform remote operation
       final remoteTask = wallpaperRemoteDataSource.addWallpaper(wallpaperModel);
 
-      // Save image locally
-      final localFilePath = await saveImageToPrivateDirectory(imageBytes);
-      final localFilePathString = localFilePath?.path ?? '';
-      final localData =
-          createLocalWallpaperData(localFilePathString, newWallpaperData);
-      final localWallpaperModel = WallpaperModel.fromMap(localData);
+      // final localFilePath = await saveImageToPrivateDirectory(imageBytes);
+      // final localFilePathString = localFilePath?.path ?? '';
+      // final localData =
+      //     createLocalWallpaperData(localFilePathString, newWallpaperData);
+      // final localWallpaperModel = WallpaperModel.fromMap(wallpaperModel);
 
-      // Wait for both remote and local operations to complete
-      await Future.wait([
-        remoteTask,
-        wallpaperLocalDataSource.addWallpaper(localWallpaperModel)
-      ]);
+      await Future.wait(
+          [remoteTask, wallpaperLocalDataSource.addWallpaper(wallpaperModel)]);
 
       return Resource.success(data: '');
     } catch (e) {
+      print(e);
       return Resource.failure(errorMessage: 'Something went wrong');
     }
   }
@@ -101,7 +94,7 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
   Map<String, dynamic> createWallpaperData(
       String imageUrl, WallpaperEntity wallpaper, String blurHash) {
     return {
-      'id': Uuid().v4(),
+      'id': const Uuid().v4(),
       'user_id': supabaseClient.auth.currentUser?.id,
       'category_id': wallpaper.categoryId,
       'title': wallpaper.title,
@@ -275,11 +268,11 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
         final existingRecordResource =
             await localDataSource.getWallpaperById(record['id']);
 
-        final imageBytes = await downloadImage(record['image_url']);
-        if (imageBytes != null) {
-          final localImagePath = await saveImageToPrivateDirectory(imageBytes);
-          record['image_url'] = localImagePath!.path;
-        }
+        // final imageBytes = await downloadImage(record['image_url']);
+        // if (imageBytes != null) {
+        //   final localImagePath = await saveImageToPrivateDirectory(imageBytes);
+        //   record['image_url'] = localImagePath!.path;
+        // }
         WallpaperModel wallpaperModel = WallpaperModel.fromMap(record);
         if (existingRecordResource.success) {
           await localDataSource.updateWallpaper(wallpaperModel);

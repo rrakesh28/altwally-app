@@ -152,7 +152,6 @@ class WallpaperModel extends HiveObject {
       'size': size,
       'height': height,
       'width': width,
-      'favourite': favourite,
       'wall_of_the_month': wallOfTheMonth,
       'likes': likes,
       'views': views,

@@ -4,13 +4,6 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  Future<void> initialize() async {
-    const InitializationSettings initializationSettings =
-        InitializationSettings(
-            android: AndroidInitializationSettings('launcher_icon'));
-    await _flutterLocalNotificationsPlugin.initialize(initializationSettings);
-  }
-
   Future<void> showLoadingNotification() async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
@@ -20,6 +13,8 @@ class NotificationService {
       priority: Priority.high,
       showProgress: true,
       indeterminate: true,
+      icon: "@mipmap/launcher_icon",
+      ongoing: true,
     );
 
     const NotificationDetails platformChannelSpecifics =
@@ -27,10 +22,10 @@ class NotificationService {
 
     await _flutterLocalNotificationsPlugin.show(
       0,
-      'Loading...',
-      'Please wait while we load.',
+      'Uploading the wallpaper..',
+      'Please wait while we upload your wallpaper.',
       platformChannelSpecifics,
-      payload: 'loading',
+      payload: 'uploading',
     );
   }
 
@@ -41,15 +36,16 @@ class NotificationService {
       'Success Channel',
       importance: Importance.high,
       priority: Priority.high,
+      icon: "@mipmap/launcher_icon",
     );
 
-    final NotificationDetails platformChannelSpecifics =
+    const NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
 
     await _flutterLocalNotificationsPlugin.show(
       1,
       'Success!',
-      'Task completed successfully.',
+      'Wallpaper upload successfully!!.',
       platformChannelSpecifics,
       payload: 'success',
     );
@@ -63,6 +59,7 @@ class NotificationService {
       importance: Importance.high,
       priority: Priority.high,
       playSound: false,
+      icon: "@mipmap/launcher_icon",
     );
 
     const NotificationDetails platformChannelSpecifics =
@@ -75,5 +72,9 @@ class NotificationService {
       platformChannelSpecifics,
       payload: 'failed',
     );
+  }
+
+  Future<void> cancelAllNotifications() async {
+    await _flutterLocalNotificationsPlugin.cancelAll();
   }
 }
