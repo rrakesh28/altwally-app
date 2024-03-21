@@ -103,7 +103,7 @@ class MyApp extends StatelessWidget {
           create: (_) => di.sl<GetCategoryWallpapersCubit>(),
         ),
         BlocProvider<GetRecentlyAddedWallpapersCubit>(
-          create: (_) => di.sl<GetRecentlyAddedWallpapersCubit>(),
+          create: (_) => di.sl<GetRecentlyAddedWallpapersCubit>()..fetchData(),
         ),
         BlocProvider<GetPopularWallpapersCubit>(
           create: (_) => di.sl<GetPopularWallpapersCubit>(),

@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:alt__wally/core/util/resource.dart';
+import 'package:alt__wally/features/category/data/datasources/local/cateogry_local_data_source.dart';
 import 'package:alt__wally/features/wallpaper/data/datasource/local/wallpaper_local_data_source.dart';
 import 'package:alt__wally/features/wallpaper/data/datasource/remote/wallpaper_remote_data_source.dart';
 import 'package:alt__wally/features/wallpaper/data/model/wallpaper_model.dart';
@@ -22,11 +24,13 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
   final SupabaseClient supabaseClient;
   final WallpaperLocalDataSource wallpaperLocalDataSource;
   final WallpaperRemoteDataSource wallpaperRemoteDataSource;
+  final CategoryLocalDataSource categoryLocalDataSource;
 
   WallpaperRepositoryImpl({
     required this.supabaseClient,
     required this.wallpaperLocalDataSource,
     required this.wallpaperRemoteDataSource,
+    required this.categoryLocalDataSource,
   });
 
   @override
@@ -39,15 +43,14 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
         return Resource.failure(errorMessage: 'Failed to upload image');
       }
 
-      // final downloadTask = downloadImage(imageUrl);
-      // final imageBytes = await downloadTask;
+      final downloadTask = downloadImage(imageUrl);
+      final imageBytes = await downloadTask;
 
-      // if (imageBytes == null) {
-      //   return Resource.failure(errorMessage: 'Failed to download image');
-      // }
-      final imageProvider = NetworkImage(imageUrl);
-      final String blurHash = await BlurhashFFI.encode(imageProvider);
-      // final blurHash = await generateBlurHash(imageUrl);
+      if (imageBytes == null) {
+        return Resource.failure(errorMessage: 'Failed to download image');
+      }
+
+      final blurHash = await generateBlurHash(imageBytes);
 
       final newWallpaperData =
           createWallpaperData(imageUrl, wallpaper, blurHash);
@@ -55,14 +58,16 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
 
       final remoteTask = wallpaperRemoteDataSource.addWallpaper(wallpaperModel);
 
-      // final localFilePath = await saveImageToPrivateDirectory(imageBytes);
-      // final localFilePathString = localFilePath?.path ?? '';
-      // final localData =
-      //     createLocalWallpaperData(localFilePathString, newWallpaperData);
-      // final localWallpaperModel = WallpaperModel.fromMap(wallpaperModel);
+      final localFilePath = await saveImageToPrivateDirectory(imageBytes);
+      final localFilePathString = localFilePath?.path ?? '';
+      final localData =
+          createLocalWallpaperData(localFilePathString, newWallpaperData);
+      final localWallpaperModel = WallpaperModel.fromMap(localData);
 
-      await Future.wait(
-          [remoteTask, wallpaperLocalDataSource.addWallpaper(wallpaperModel)]);
+      await Future.wait([
+        remoteTask,
+        wallpaperLocalDataSource.addWallpaper(localWallpaperModel)
+      ]);
 
       return Resource.success(data: '');
     } catch (e) {
@@ -199,47 +204,92 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
     throw UnimplementedError();
   }
 
+  // Stream<Resource> getRecentlyAddedWallpapers(bool fetchFromRemote) async* {
+  //   StreamController<Resource> controller = StreamController();
+
+  //   try {
+  //     final localResource =
+  //         await wallpaperLocalDataSource.getRecentlyAddedWallpapers();
+  //     List<WallpaperModel> localWallpapers = localResource.data ?? [];
+
+  //     if (localWallpapers.isNotEmpty && !fetchFromRemote) {
+  //       controller.add(Resource.success(
+  //         data:
+  //             localWallpapers.map((wallpaper) => wallpaper.toEntity()).toList(),
+  //       ));
+  //     }
+
+  //     await for (var wallpaperModel in _syncWallpapersInBackground(
+  //       wallpaperRemoteDataSource,
+  //       wallpaperLocalDataSource,
+  //     )) {
+  //       controller.add(Resource.success(
+  //         data: [wallpaperModel.toEntity()],
+  //       ));
+  //     }
+
+  //     controller.close();
+  //   } catch (e) {
+  //     controller.add(Resource.failure(errorMessage: "Something went wrong"));
+  //     controller.close();
+  //   }
+
+  //   yield* controller.stream;
+  // }
+
   @override
-  Future<Resource> getRecentlyAddedWallpapers(bool fetchFromRemote) async {
+  Stream<Resource> getRecentlyAddedWallpapers(bool fetchFromRemote) async* {
     try {
       final localResource =
           await wallpaperLocalDataSource.getRecentlyAddedWallpapers();
-      final List<WallpaperModel> localWallpapers = localResource.data ?? [];
+      List<WallpaperModel> localWallpapers = localResource.data ?? [];
 
-      List<WallpaperEntity> wallpaperEntities =
-          localWallpapers.map((wallpaper) => wallpaper.toEntity()).toList();
+      yield Resource.success(
+          data: localWallpapers
+              .map((wallpaper) => wallpaper.toEntity())
+              .toList());
 
-      if (localWallpapers.isNotEmpty && !fetchFromRemote) {
-        return Resource.success(data: wallpaperEntities);
+      if (localWallpapers.isEmpty || fetchFromRemote) {
+        await for (var entity in _syncWallpapersInBackground(
+            wallpaperRemoteDataSource, wallpaperLocalDataSource)) {
+          int existingIndex = localWallpapers
+              .indexWhere((wallpaper) => wallpaper.id == entity.id);
+
+          final categoryResource =
+              await categoryLocalDataSource.getCategoryById(entity.categoryId!);
+          entity.category = categoryResource.data;
+
+          print(existingIndex);
+
+          if (existingIndex == -1) {
+            localWallpapers.add(entity);
+          } else {
+            localWallpapers[existingIndex] = entity;
+          }
+
+          yield Resource.success(
+              data: localWallpapers
+                  .map((wallpaper) => wallpaper.toEntity())
+                  .toList());
+        }
       }
-
-      await _syncWallpapersInBackground(
-          wallpaperRemoteDataSource, wallpaperLocalDataSource);
-
-      final updatedLocalResource =
-          await wallpaperLocalDataSource.getRecentlyAddedWallpapers();
-      final List<WallpaperModel> updatedLocalWallpapers =
-          updatedLocalResource.data ?? [];
-
-      List<WallpaperEntity> updatedWallpaperEntities = updatedLocalWallpapers
-          .map((wallpaper) => wallpaper.toEntity())
-          .toList();
-      return Resource.success(data: updatedWallpaperEntities);
     } catch (e) {
-      return Resource.failure(errorMessage: "Something went wrong");
+      yield Resource.failure(errorMessage: "Something went wrong");
     }
   }
 
-  Future<void> _syncWallpapersInBackground(
+  Stream<WallpaperModel> _syncWallpapersInBackground(
     WallpaperRemoteDataSource remoteDataSource,
     WallpaperLocalDataSource localDataSource,
-  ) async {
+  ) async* {
     try {
       final localIdsResource = await localDataSource.getAllWallpaperIds();
 
       if (localIdsResource.success) {
         final serverRecordsResource =
             await remoteDataSource.getIdsNotInServer(localIdsResource.data);
+        print('reocrs ids wally not in server');
+        print(serverRecordsResource.data);
         if (serverRecordsResource.success) {
           for (var record in serverRecordsResource.data) {
             localDataSource.deleteWallpaper(record);
@@ -251,10 +301,14 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
       final lastUpdatedRecordResource =
           await localDataSource.getLastUpdatedRecord();
       if (lastUpdatedRecordResource.success) {
-        if (lastUpdatedRecordResource.data.updatedAt != null) {
-          lastUpdatedAt = lastUpdatedRecordResource.data.updatedAt;
-        }
+        lastUpdatedAt = lastUpdatedRecordResource.data.updatedAt;
+        print('updated at');
+        print(lastUpdatedAt);
+      } else {
+        print('last updated erro msg');
+        print(lastUpdatedRecordResource.errorMessage);
       }
+
       final updatedRecordsResource = lastUpdatedAt != null
           ? await remoteDataSource.getUpdatedRecords(lastUpdatedAt)
           : await remoteDataSource.getRecentlyAddedWallpapers();
@@ -265,20 +319,29 @@ class WallpaperRepositoryImpl implements WallpaperRepository {
       }
 
       for (var record in updatedRecordsResource.data) {
+        print(updatedRecordsResource.data.length);
+        print('server record updated at');
+        print(
+            'Server record updated at: ${record['updated_at']} local record udpated at $lastUpdatedAt');
+
         final existingRecordResource =
             await localDataSource.getWallpaperById(record['id']);
 
-        // final imageBytes = await downloadImage(record['image_url']);
-        // if (imageBytes != null) {
-        //   final localImagePath = await saveImageToPrivateDirectory(imageBytes);
-        //   record['image_url'] = localImagePath!.path;
-        // }
+        final imageBytes = await downloadImage(record['image_url']);
+        if (imageBytes != null) {
+          final localImagePath = await saveImageToPrivateDirectory(imageBytes);
+          record['image_url'] = localImagePath!.path;
+        }
         WallpaperModel wallpaperModel = WallpaperModel.fromMap(record);
         if (existingRecordResource.success) {
+          wallpaperModel.favourite = existingRecordResource.data.favourite;
           await localDataSource.updateWallpaper(wallpaperModel);
         } else {
+          print('add');
           await localDataSource.addWallpaper(wallpaperModel);
         }
+
+        yield wallpaperModel;
       }
     } catch (e) {
       print('Background - Error: $e');

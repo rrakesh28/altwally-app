@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:alt__wally/core/common/widgets/wallpaper_card.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/get_favourite/get_favourite_wallpapers_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/get_favourite/get_favourite_wallpapers_state.dart';
+import 'package:alt__wally/features/wallpaper/presentation/cubit/toggle_favourite/toggle_favourite_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/pages/favourites_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -51,7 +54,6 @@ class _FavouriteWallpapersScreenState extends State<FavouriteWallpapersScreen> {
                   child: BlocBuilder<GetFavouriteWallpapersCubit,
                       GetFavouriteWallpapersState>(
                     builder: (context, state) {
-                      print(state);
                       if (state is GetFavouriteWallpapersInitial) {
                         return const Center(child: CircularProgressIndicator());
                       } else if (state is GetFavouriteWallpapersLoaded) {
@@ -85,8 +87,7 @@ class _FavouriteWallpapersScreenState extends State<FavouriteWallpapersScreen> {
                           ),
                           itemCount: state.wallpapers.length,
                           itemBuilder: (context, index) {
-                            return WallpaperItem(
-                              wallpaper: state.wallpapers[index]!,
+                            return GestureDetector(
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -97,6 +98,118 @@ class _FavouriteWallpapersScreenState extends State<FavouriteWallpapersScreen> {
                                   ),
                                 );
                               },
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    width: double.infinity,
+                                    clipBehavior: Clip.antiAlias,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Image.file(
+                                      File(state.wallpapers[index]?.imageUrl ??
+                                          ''),
+                                      height: double.infinity,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              Container(
+                                        color: Colors.red,
+                                        child: const Center(
+                                          child: Icon(Icons.error,
+                                              color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  if (state.wallpapers[index]?.category != null)
+                                    Positioned(
+                                      bottom: 0,
+                                      left: 0,
+                                      right: 0,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withOpacity(0.5),
+                                          borderRadius: const BorderRadius.only(
+                                            bottomLeft: Radius.circular(10),
+                                            bottomRight: Radius.circular(10),
+                                          ),
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(
+                                            left: 10,
+                                            top: 5,
+                                            right: 10,
+                                            bottom: 5,
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      state
+                                                              .wallpapers[index]
+                                                              ?.category
+                                                              ?.name ??
+                                                          'Default Category',
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      state.wallpapers[index]
+                                                              ?.title ??
+                                                          'Default Title',
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 16,
+                                                      ),
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              IconButton(
+                                                icon: const Icon(
+                                                  Icons.favorite,
+                                                  color: Colors.red,
+                                                ),
+                                                onPressed: () {
+                                                  try {
+                                                    BlocProvider.of<
+                                                                ToggleFavouriteWallpaperCubit>(
+                                                            context)
+                                                        .toggle(
+                                                            state.wallpapers[
+                                                                index]!,
+                                                            'remove');
+                                                    BlocProvider.of<
+                                                                GetFavouriteWallpapersCubit>(
+                                                            context)
+                                                        .remove(
+                                                            state.wallpapers[
+                                                                index]!);
+                                                  } catch (e) {
+                                                    print(e);
+                                                  }
+                                                },
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
                             );
                           },
                         );

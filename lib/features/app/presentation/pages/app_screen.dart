@@ -4,6 +4,7 @@ import 'package:alt__wally/features/user/presentation/pages/profile_screen/profi
 import 'package:alt__wally/features/wallpaper/presentation/pages/favourites_screen.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_floating_bottom_bar/flutter_floating_bottom_bar.dart';
 
 class AppScreen extends StatefulWidget {
@@ -28,30 +29,38 @@ class _MyHomePageState extends State<AppScreen>
     Colors.pink,
   ];
 
+  final ScrollController _scrollController = ScrollController();
+  bool _isVisible = true;
+
   @override
   void initState() {
     currentPage = widget.index ?? 0;
     tabController = TabController(length: 4, vsync: this);
-    tabController.animation?.addListener(
-      () {
-        final value = tabController.animation!.value.round();
-        if (value != currentPage && mounted) {
-          changePage(value);
-        }
-      },
-    );
-    super.initState();
-  }
 
-  void changePage(int newPage) {
-    setState(() {
-      currentPage = newPage;
+    _scrollController.addListener(() {
+      if (_scrollController.position.userScrollDirection ==
+          ScrollDirection.reverse) {
+        if (_isVisible)
+          setState(() {
+            _isVisible = false;
+          });
+      }
+      if (_scrollController.position.userScrollDirection ==
+          ScrollDirection.forward) {
+        if (!_isVisible)
+          setState(() {
+            _isVisible = true;
+          });
+      }
     });
+
+    super.initState();
   }
 
   @override
   void dispose() {
     tabController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -87,14 +96,17 @@ class _MyHomePageState extends State<AppScreen>
         barAlignment: Alignment.bottomCenter,
         iconHeight: 30,
         iconWidth: 30,
-        reverse: false,
+        reverse: _isVisible,
         hideOnScroll: true,
         scrollOpposite: false,
         onBottomBarHidden: () {},
         onBottomBarShown: () {},
         body: (context, controller) => TabBarView(
-          controller: tabController,
           dragStartBehavior: DragStartBehavior.down,
+          controller: tabController,
+          physics: _isVisible
+              ? ClampingScrollPhysics()
+              : NeverScrollableScrollPhysics(),
           children: const [
             HomeScreen(),
             ExploreScreen(),
@@ -110,20 +122,22 @@ class _MyHomePageState extends State<AppScreen>
               indicatorPadding: const EdgeInsets.fromLTRB(6, 0, 6, 0),
               controller: tabController,
               indicator: const UnderlineTabIndicator(
-                  borderSide: BorderSide(
-                    color: Colors.white,
-                    width: 4,
-                  ),
-                  insets: EdgeInsets.fromLTRB(16, 0, 16, 8)),
+                borderSide: BorderSide(
+                  color: Colors.white,
+                  width: 4,
+                ),
+                insets: EdgeInsets.fromLTRB(16, 0, 16, 8),
+              ),
               tabs: const [
                 SizedBox(
                   height: 55,
                   width: 40,
                   child: Center(
-                      child: Icon(
-                    Icons.home,
-                    color: Colors.white,
-                  )),
+                    child: Icon(
+                      Icons.home,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
                 SizedBox(
                   height: 55,

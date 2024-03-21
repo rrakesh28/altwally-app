@@ -9,6 +9,6 @@ abstract class WallpaperRepository {
   Future<Resource> getFavouriteWallpapers();
   Future<Resource> toggleFavouriteWallpaper(
       WallpaperEntity wallpaper, String type);
-  Future<Resource> getRecentlyAddedWallpapers(bool fetchFromRemote);
+  Stream<Resource> getRecentlyAddedWallpapers(bool fetchFromRemote);
   Future<Resource> getPopularWallpapers();
 }

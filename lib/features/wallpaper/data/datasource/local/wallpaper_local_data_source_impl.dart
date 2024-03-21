@@ -17,8 +17,13 @@ class WallpaperLocalDataSourceImpl implements WallpaperLocalDataSource {
 
   @override
   Future<Resource> addWallpaper(WallpaperModel wallpaper) async {
+    print('add wallpaper local');
+    print(wallpaper);
     try {
       final box = await Hive.openBox<WallpaperModel>(_boxName);
+
+      final wallpapers = box.values.toList();
+      print(wallpapers);
       await box.put(wallpaper.id, wallpaper);
       return Resource.success(data: null);
     } catch (e) {
@@ -43,7 +48,6 @@ class WallpaperLocalDataSourceImpl implements WallpaperLocalDataSource {
         wallpaper.category = categoryResource.data;
       }
 
-      await box.close();
       return Resource.success(data: wallpapers);
     } catch (e) {
       return Resource.failure(errorMessage: e.toString());
@@ -60,7 +64,7 @@ class WallpaperLocalDataSourceImpl implements WallpaperLocalDataSource {
     try {
       final box = await Hive.openBox<WallpaperModel>(_boxName);
       final List<WallpaperModel> wallpapers = box.values.toList()
-        ..sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
       for (var wallpaper in wallpapers) {
         // final userResource =
@@ -71,7 +75,6 @@ class WallpaperLocalDataSourceImpl implements WallpaperLocalDataSource {
 
         wallpaper.category = categoryResource.data;
       }
-      await box.close();
       return Resource.success(data: wallpapers);
     } catch (e) {
       return Resource.failure(errorMessage: e.toString());
@@ -86,10 +89,12 @@ class WallpaperLocalDataSourceImpl implements WallpaperLocalDataSource {
   @override
   Future<Resource> toggleFavouriteWallpaper(
       WallpaperModel wallpaper, String type) async {
-    print('local');
+    print('local toogle fav');
     try {
       final box = await Hive.openBox<WallpaperModel>(_boxName);
       final wallpaperInBox = box.get(wallpaper.id);
+      print('wall in box');
+      print(wallpaperInBox?.toJson());
       if (wallpaperInBox != null) {
         if (wallpaper.favourite != null) {
           if (type == 'add') {
@@ -105,10 +110,13 @@ class WallpaperLocalDataSourceImpl implements WallpaperLocalDataSource {
           }
         }
 
-        Resource wallpapers = await getRecentlyAddedWallpapers();
-        for (var record in wallpapers.data as List<WallpaperModel>) {
-          print(record.toJson());
+        final favWallResource = await getFavouriteWallpapers();
+
+        for (var data in favWallResource.data as List<WallpaperModel>) {
+          print('fav wal');
+          print(data.toJson());
         }
+
         return Resource.success(data: null);
       } else {
         return Resource.failure(
@@ -134,12 +142,11 @@ class WallpaperLocalDataSourceImpl implements WallpaperLocalDataSource {
 
   @override
   Future<Resource> deleteWallpaper(String wallpaperId) async {
+    print('delete wall local');
     try {
       final box = await Hive.openBox<WallpaperModel>(_boxName);
 
       await box.delete(wallpaperId);
-
-      await box.close();
 
       return Resource.success(data: null);
     } catch (e) {
@@ -149,12 +156,15 @@ class WallpaperLocalDataSourceImpl implements WallpaperLocalDataSource {
 
   @override
   Future<Resource> updateWallpaper(WallpaperModel wallpaper) async {
+    print('update wallpaper local');
+    print(wallpaper);
     try {
       final box = await Hive.openBox<WallpaperModel>(_boxName);
 
-      await box.put(wallpaper.id, wallpaper);
+      final wallpapers = box.values.toList();
+      print(wallpapers);
 
-      await box.close();
+      await box.put(wallpaper.id, wallpaper);
 
       return Resource.success(data: wallpaper);
     } catch (e) {
@@ -170,8 +180,6 @@ class WallpaperLocalDataSourceImpl implements WallpaperLocalDataSource {
       final List<String> wallpaperIds =
           box.values.map((wallpaper) => wallpaper.id!).toList();
 
-      await box.close();
-
       return Resource.success(data: wallpaperIds);
     } catch (e) {
       return Resource.failure(errorMessage: 'Failed to get wallpapers IDs: $e');
@@ -183,11 +191,12 @@ class WallpaperLocalDataSourceImpl implements WallpaperLocalDataSource {
     try {
       final box = await Hive.openBox<WallpaperModel>(_boxName);
 
-      final List<WallpaperModel> sortedRecords = box.values.toList()
-        ..sort((a, b) =>
-            (b.updatedAt ?? DateTime(0)).compareTo(a.updatedAt ?? DateTime(0)));
+      final List<WallpaperModel> sortedRecords = box.values.toList();
 
-      await box.close();
+      print('sortedRecords');
+      print(sortedRecords);
+
+      sortedRecords.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
 
       if (sortedRecords.isNotEmpty) {
         return Resource.success(data: sortedRecords.first);
@@ -205,15 +214,12 @@ class WallpaperLocalDataSourceImpl implements WallpaperLocalDataSource {
     try {
       final box = await Hive.openBox<WallpaperModel>(_boxName);
 
-      final WallpaperModel? category = box.get(id);
+      // final WallpaperModel? category = box.get(id);
 
-      await box.close();
+      final WallpaperModel wallpaper =
+          box.values.firstWhere((element) => element.id == id);
 
-      if (category != null) {
-        return Resource.success(data: category);
-      } else {
-        return Resource.failure(errorMessage: 'Category not found');
-      }
+      return Resource.success(data: wallpaper);
     } catch (e) {
       return Resource.failure(errorMessage: 'Failed to get category: $e');
     }

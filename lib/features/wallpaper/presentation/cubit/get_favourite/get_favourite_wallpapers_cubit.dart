@@ -23,11 +23,22 @@ class GetFavouriteWallpapersCubit extends Cubit<GetFavouriteWallpapersState> {
     try {
       if (state is GetFavouriteWallpapersLoaded) {
         final currentState = state as GetFavouriteWallpapersLoaded;
-        final updatedList = List<WallpaperEntity?>.from(currentState.wallpapers)
-          ..add(wallpaper);
+        final List<WallpaperEntity?> currentWallpapers =
+            currentState.wallpapers;
 
-        print(updatedList);
-        emit(GetFavouriteWallpapersLoaded(wallpapers: updatedList));
+        bool isDuplicate = currentWallpapers
+            .any((existingWallpaper) => existingWallpaper?.id == wallpaper.id);
+
+        if (!isDuplicate) {
+          final updatedList = List<WallpaperEntity?>.from(currentWallpapers)
+            ..add(wallpaper);
+
+          print(updatedList);
+          emit(GetFavouriteWallpapersLoaded(wallpapers: updatedList));
+        } else {
+          print(
+              "Wallpaper with ID ${wallpaper.id} already exists in the list.");
+        }
       }
     } catch (e) {
       print(e);

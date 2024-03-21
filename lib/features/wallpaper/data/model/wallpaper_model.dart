@@ -134,7 +134,6 @@ class WallpaperModel extends HiveObject {
         height = map['height'],
         width = map['width'],
         wallOfTheMonth = map['wall_of_the_month'],
-        favourite = map['favourite'],
         likes = map['likes'],
         views = map['views'],
         downloads = map['downloads'],

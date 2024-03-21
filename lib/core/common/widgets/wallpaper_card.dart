@@ -4,11 +4,8 @@ import 'package:alt__wally/features/wallpaper/domain/entities/wallpaper_entity.d
 import 'package:alt__wally/features/wallpaper/presentation/cubit/get_favourite/get_favourite_wallpapers_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/get_favourite/get_favourite_wallpapers_state.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/toggle_favourite/toggle_favourite_cubit.dart';
-import 'package:alt__wally/main.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_blurhash/flutter_blurhash.dart';
 
 class WallpaperItem extends StatefulWidget {
   final WallpaperEntity wallpaper;
@@ -28,6 +25,7 @@ class _WallpaperItemState extends State<WallpaperItem> {
   bool isFavorite = false;
   @override
   void initState() {
+    print('init');
     super.initState();
 
     final favouritesState = context.read<GetFavouriteWallpapersCubit>().state;
@@ -39,16 +37,28 @@ class _WallpaperItemState extends State<WallpaperItem> {
   }
 
   bool _checkIfFavorite() {
+    print('init check');
     final favouritesState = context.read<GetFavouriteWallpapersCubit>().state;
     if (favouritesState is GetFavouriteWallpapersLoaded) {
+      print("insisde loaded");
       return favouritesState.wallpapers
           .any((favWallpaper) => favWallpaper?.id == widget.wallpaper.id);
+    } else {
+      print('inside first else');
+      BlocProvider.of<GetFavouriteWallpapersCubit>(context).fetchData();
+      if (favouritesState is GetFavouriteWallpapersLoaded) {
+        print('inside 2nd loaded');
+        return favouritesState.wallpapers
+            .any((favWallpaper) => favWallpaper?.id == widget.wallpaper.id);
+      }
     }
+    print('outlisd3');
     return false;
   }
 
   @override
   Widget build(BuildContext context) {
+    print('inside build');
     return BlocListener<GetFavouriteWallpapersCubit,
         GetFavouriteWallpapersState>(
       listener: (context, state) {
@@ -69,34 +79,16 @@ class _WallpaperItemState extends State<WallpaperItem> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: CachedNetworkImage(
+              child: Image.file(
+                File(widget.wallpaper.imageUrl!),
                 height: double.infinity,
                 fit: BoxFit.cover,
-                imageUrl: widget.wallpaper.imageUrl ?? '',
-                placeholder: (context, url) {
-                  if (widget.wallpaper.blurHash != null) {
-                    return BlurHash(
-                      hash: widget.wallpaper.blurHash!,
-                      imageFit: BoxFit.cover,
-                      duration: const Duration(milliseconds: 500),
-                    );
-                  } else {
-                    return const Center(
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(),
-                      ),
-                    );
-                  }
-                },
-                errorWidget: (context, url, error) => Container(
+                errorBuilder: (context, error, stackTrace) => Container(
                   color: Colors.red,
                   child: const Center(
                     child: Icon(Icons.error, color: Colors.white),
                   ),
                 ),
-                cacheManager: CustomCacheManager.instance,
               ),
             ),
             if (widget.wallpaper.category != null)
@@ -159,6 +151,9 @@ class _WallpaperItemState extends State<WallpaperItem> {
                           onPressed: () {
                             try {
                               if (isFavorite) {
+                                setState(() {
+                                  isFavorite = false;
+                                });
                                 BlocProvider.of<ToggleFavouriteWallpaperCubit>(
                                         context)
                                     .toggle(widget.wallpaper, 'remove');
@@ -166,6 +161,9 @@ class _WallpaperItemState extends State<WallpaperItem> {
                                         context)
                                     .remove(widget.wallpaper);
                               } else {
+                                setState(() {
+                                  isFavorite = true;
+                                });
                                 BlocProvider.of<ToggleFavouriteWallpaperCubit>(
                                         context)
                                     .toggle(widget.wallpaper, 'add');

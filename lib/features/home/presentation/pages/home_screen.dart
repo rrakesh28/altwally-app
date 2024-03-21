@@ -15,7 +15,6 @@ import 'package:alt__wally/main.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:shimmer/shimmer.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -205,50 +204,23 @@ class _HomeScreenState extends State<HomeScreen> {
                                                             10),
                                                   ),
                                                   padding: EdgeInsets.zero,
-                                                  child: CachedNetworkImage(
+                                                  child: Image.file(
+                                                    File(wallpaper?.imageUrl ??
+                                                        ''), // Provide the local file path here
                                                     height: double.infinity,
                                                     fit: BoxFit.cover,
-                                                    imageUrl: wallpaper == null
-                                                        ? ''
-                                                        : wallpaper.imageUrl!,
-                                                    placeholder:
-                                                        (context, url) {
-                                                      if (wallpaper?.blurHash !=
-                                                          null) {
-                                                        return BlurHash(
-                                                          hash: wallpaper!
-                                                              .blurHash!,
-                                                          imageFit:
-                                                              BoxFit.cover,
-                                                          duration:
-                                                              const Duration(
-                                                                  milliseconds:
-                                                                      500),
-                                                        );
-                                                      } else {
-                                                        return const Center(
-                                                          child: SizedBox(
-                                                              width: 20,
-                                                              height: 20,
-                                                              child:
-                                                                  CircularProgressIndicator()),
-                                                        );
-                                                      }
+                                                    errorBuilder: (context,
+                                                        error, stackTrace) {
+                                                      return Container(
+                                                        color: Colors.red,
+                                                        child: const Center(
+                                                          child: Icon(
+                                                              Icons.error,
+                                                              color:
+                                                                  Colors.white),
+                                                        ),
+                                                      );
                                                     },
-                                                    errorWidget:
-                                                        (context, url, error) =>
-                                                            Container(
-                                                      color: Colors
-                                                          .red, // Change this to the desired error background color
-                                                      child: const Center(
-                                                        child: Icon(Icons.error,
-                                                            color:
-                                                                Colors.white),
-                                                      ),
-                                                    ),
-                                                    cacheManager:
-                                                        CustomCacheManager
-                                                            .instance,
                                                   ),
                                                 ),
                                               );

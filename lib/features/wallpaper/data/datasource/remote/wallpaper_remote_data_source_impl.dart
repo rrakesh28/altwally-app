@@ -128,10 +128,15 @@ class WallpaperRemoteDataSourceImpl implements WallpaperRemoteDataSource {
   @override
   Future<Resource> getIdsNotInServer(List<String> localIds) async {
     try {
-      final categoriesTable = supabaseClient.from('wallpapers');
+      final wallpapersTable = supabaseClient.from('wallpapers');
 
-      final serverIds =
-          await categoriesTable.select('id').inFilter('id', localIds);
+      final serverIdsData =
+          await wallpapersTable.select('id').inFilter('id', localIds);
+
+      List<String> serverIds = [];
+      for (var row in serverIdsData) {
+        serverIds.add(row['id']);
+      }
 
       final List<String> idsNotInServer =
           localIds.where((id) => !serverIds.contains(id)).toList();

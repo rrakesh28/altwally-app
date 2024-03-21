@@ -13,7 +13,7 @@ class NotificationService {
       priority: Priority.high,
       showProgress: true,
       indeterminate: true,
-      icon: "@mipmap/launcher_icon",
+      icon: "@mipmap/ic_launcher",
       ongoing: true,
     );
 
@@ -36,7 +36,7 @@ class NotificationService {
       'Success Channel',
       importance: Importance.high,
       priority: Priority.high,
-      icon: "@mipmap/launcher_icon",
+      icon: "@mipmap/ic_launcher",
     );
 
     const NotificationDetails platformChannelSpecifics =
@@ -59,7 +59,7 @@ class NotificationService {
       importance: Importance.high,
       priority: Priority.high,
       playSound: false,
-      icon: "@mipmap/launcher_icon",
+      icon: "@mipmap/ic_launcher",
     );
 
     const NotificationDetails platformChannelSpecifics =

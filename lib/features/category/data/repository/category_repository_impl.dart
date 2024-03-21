@@ -17,24 +17,18 @@ class CategoryRepositoryImpl implements CategoryRepository {
   Future<Resource> getCategories(bool fetchFromRemote) async {
     try {
       final localResource = await localDataSource.getCategories();
-      final List<CategoryModel> localCategories = localResource.data ?? [];
+      List<CategoryModel> localCategories = localResource.data ?? [];
 
-      if (localCategories.isNotEmpty && !fetchFromRemote) {
-        return Resource.success(
-          data: localCategories.map((category) => category.toEntity()).toList(),
-        );
+      if (localCategories.isEmpty) {
+        await _syncCategoriesInBackground(remoteDataSource, localDataSource);
+        final updatedLocalResource = await localDataSource.getCategories();
+        localCategories = updatedLocalResource.data ?? [];
+      } else {
+        _syncCategoriesInBackground(remoteDataSource, localDataSource);
       }
 
-      await _syncCategoriesInBackground(remoteDataSource, localDataSource);
-
-      final updatedLocalResource = await localDataSource.getCategories();
-      final List<CategoryModel> updatedLocalCategories =
-          updatedLocalResource.data ?? [];
-
       return Resource.success(
-        data: updatedLocalCategories
-            .map((category) => category.toEntity())
-            .toList(),
+        data: localCategories.map((category) => category.toEntity()).toList(),
       );
     } catch (e) {
       return Resource.failure(errorMessage: "Something went wrong");
@@ -70,6 +64,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
           lastUpdatedAt = lastUpdatedRecordResource.data.updatedAt;
         }
       }
+
       final updatedRecordsResource = lastUpdatedAt != null
           ? await remoteDataSource.getUpdatedRecords(lastUpdatedAt)
           : await remoteDataSource.getCategories();

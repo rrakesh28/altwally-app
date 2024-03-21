@@ -188,6 +188,9 @@ class UserRepositoryImpl implements UserRepository {
 
       return Resource.success(data: '');
     } catch (e) {
+      if (e is AuthException) {
+        return Resource.failure(errorMessage: e.message);
+      }
       return Resource.failure(errorMessage: e.toString());
     }
   }

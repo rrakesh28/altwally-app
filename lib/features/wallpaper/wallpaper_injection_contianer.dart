@@ -62,7 +62,8 @@ Future<void> wallpaperInjectionContainer() async {
   sl.registerLazySingleton<WallpaperRepository>(() => WallpaperRepositoryImpl(
       supabaseClient: sl.call(),
       wallpaperLocalDataSource: sl.call(),
-      wallpaperRemoteDataSource: sl.call()));
+      wallpaperRemoteDataSource: sl.call(),
+      categoryLocalDataSource: sl.call()));
 
   //Local DataStore
   sl.registerLazySingleton<WallpaperLocalDataSource>(() =>

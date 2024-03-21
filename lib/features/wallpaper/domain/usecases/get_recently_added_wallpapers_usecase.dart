@@ -6,7 +6,7 @@ class GetRecentlyAddedUseCase {
 
   GetRecentlyAddedUseCase({required this.repository});
 
-  Future<Resource> call(bool fetchFromRemote) {
+  Stream<Resource> call(bool fetchFromRemote) {
     return repository.getRecentlyAddedWallpapers(fetchFromRemote);
   }
 }

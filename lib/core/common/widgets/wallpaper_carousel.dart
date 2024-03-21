@@ -10,7 +10,6 @@ import 'package:alt__wally/features/wallpaper/presentation/cubit/get_favourite/g
 import 'package:alt__wally/features/wallpaper/presentation/cubit/get_favourite/get_favourite_wallpapers_state.dart';
 import 'package:alt__wally/features/wallpaper/presentation/cubit/toggle_favourite/toggle_favourite_cubit.dart';
 import 'package:alt__wally/features/wallpaper/presentation/pages/wallpaper_screen.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -130,19 +129,14 @@ class _WallpaperCarouselState extends State<WallpaperCarousel> {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(15.0),
-              child: CachedNetworkImage(
+              child: Image.file(
+                File(element?.imageUrl ??
+                    ''), // Assuming element is of type WallpaperEntity
                 height: double.infinity,
+                width: double.infinity,
                 fit: BoxFit.cover,
-                imageUrl: element == null ? '' : element.imageUrl!,
-                placeholder: (context, url) => const Center(
-                  child: SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator()),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  color: Colors
-                      .red, // Change this to the desired error background color
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: Colors.red,
                   child: const Center(
                     child: Icon(Icons.error, color: Colors.white),
                   ),
@@ -375,7 +369,7 @@ class _WallpaperCarouselState extends State<WallpaperCarousel> {
                 items: generateImageTitles(context),
                 options: CarouselOptions(
                   enlargeCenterPage: true,
-                  aspectRatio: 15 / 20,
+                  aspectRatio: 0.8,
                   initialPage: _current,
                   viewportFraction: 0.7,
                   enlargeFactor: 0.3,

@@ -1,7 +1,6 @@
 import 'package:alt__wally/core/util/resource.dart';
 import 'package:alt__wally/features/category/data/datasources/local/cateogry_local_data_source.dart';
 import 'package:alt__wally/features/category/data/model/category_model.dart';
-import 'package:alt__wally/features/category/domain/entities/category_entity.dart';
 import 'package:hive/hive.dart';
 
 class CategoryLocalDataSourceImpl implements CategoryLocalDataSource {
@@ -34,15 +33,31 @@ class CategoryLocalDataSourceImpl implements CategoryLocalDataSource {
 
   @override
   Future<Resource> addCategory(CategoryModel category) async {
-    print('add category');
-    print(category);
     try {
       final box = await Hive.openBox<CategoryModel>(_boxName);
+
+      final existingCategory = await _findCategoryById(box, category.id);
+
+      if (existingCategory != null) {
+        return Resource.failure(errorMessage: "Category already exists");
+      }
+
       await box.add(category);
       return Resource.success(data: null);
     } catch (e) {
       return Resource.failure(errorMessage: e.toString());
     }
+  }
+
+  Future<CategoryModel?> _findCategoryById(
+      Box<CategoryModel> box, String categoryId) async {
+    for (var i = 0; i < box.length; i++) {
+      final storedCategory = box.getAt(i);
+      if (storedCategory != null && storedCategory.id == categoryId) {
+        return storedCategory;
+      }
+    }
+    return null;
   }
 
   @override
@@ -99,8 +114,6 @@ class CategoryLocalDataSourceImpl implements CategoryLocalDataSource {
             updatedAt: DateTime.now()),
       );
 
-      await box.close();
-
       return Resource.success(data: category);
     } catch (e) {
       return Resource.failure(errorMessage: 'Failed to get category: $e');
@@ -115,7 +128,8 @@ class CategoryLocalDataSourceImpl implements CategoryLocalDataSource {
       final List<CategoryModel> sortedRecords = box.values.toList()
         ..sort((a, b) => (b.updatedAt).compareTo(a.updatedAt));
 
-      await box.close();
+      print('catrogy sroted reods local');
+      print(sortedRecords);
 
       if (sortedRecords.isNotEmpty) {
         return Resource.success(data: sortedRecords.first);
@@ -123,6 +137,8 @@ class CategoryLocalDataSourceImpl implements CategoryLocalDataSource {
 
       return Resource.failure(errorMessage: 'No records found');
     } catch (e) {
+      print('catelogy local hive error');
+      print(e);
       return Resource.failure(
           errorMessage: 'Failed to get last updated record: $e');
     }
@@ -136,10 +152,11 @@ class CategoryLocalDataSourceImpl implements CategoryLocalDataSource {
       final List<String> categoryIds =
           box.values.map((category) => category.id).toList();
 
-      await box.close();
-
       return Resource.success(data: categoryIds);
     } catch (e) {
+      print('local cateogyr ids');
+      print(e);
+      print('Failed to get category IDs: $e');
       return Resource.failure(errorMessage: 'Failed to get category IDs: $e');
     }
   }
